@@ -1,0 +1,13 @@
+# Template for test 1
+tables:
+  - path: liquide
+    name: "Liquide"
+    body:
+      liquide.id: id
+      liquide.name: name
+      liquide.price: price
+  - path: meat
+    name: "meat"
+    body:
+      meat.id: id
+      meat.name: name

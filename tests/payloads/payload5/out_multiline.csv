@@ -1,0 +1,269 @@
+recipe name,recipe cuisine,recipe steps,
+Classic Margherita Pizza,Italian,"-Preheat the oven to 475°F (245°C).
+-Roll out the pizza dough and spread tomato sauce evenly.
+-Top with slices of fresh mozzarella and fresh basil leaves.
+-Drizzle with olive oil and season with salt and pepper.
+-Bake in the preheated oven for 12-15 minutes or until the crust is golden brown.
+-Slice and serve hot.",
+Vegetarian Stir-Fry,Asian,"-In a wok heat sesame oil over medium-high heat.
+-Add minced ginger and garlic sauté until fragrant.
+-Add cubed tofu and stir-fry until golden brown.
+-Add broccoli carrots and bell peppers. Cook until vegetables are tender-crisp.
+-Pour soy sauce over the stir-fry and toss to combine.
+-Serve over cooked rice.",
+Chocolate Chip Cookies,American,"-Preheat the oven to 350°F (175°C).
+-In a bowl cream together softened butter brown sugar and white sugar.
+-Beat in eggs one at a time then stir in vanilla extract.
+-Combine flour baking soda and salt. Gradually add to the wet ingredients.
+-Fold in chocolate chips.
+-Drop rounded tablespoons of dough onto ungreased baking sheets.
+-Bake for 10-12 minutes or until edges are golden brown.
+-Allow cookies to cool on the baking sheet for a few minutes before transferring to a wire rack.",
+Chicken Alfredo Pasta,Italian,"-Cook fettuccine pasta according to package instructions.
+-In a pan sauté sliced chicken in butter until fully cooked.
+-Add minced garlic and cook until fragrant.
+-Pour in heavy cream and grated Parmesan cheese. Stir until the cheese is melted.
+-Season with salt and pepper to taste.
+-Combine the Alfredo sauce with cooked pasta.
+-Garnish with fresh parsley before serving.",
+Mango Salsa Chicken,Mexican,"-Season chicken thighs with salt and pepper.
+-Grill or bake chicken until fully cooked.
+-In a bowl combine diced mango chopped red onion cilantro minced jalapeño and lime juice.
+-Dice the cooked chicken and mix it with the mango salsa.
+-Serve over cooked rice.",
+Quinoa Salad with Avocado,Mediterranean,"-In a large bowl combine cooked quinoa diced avocado halved cherry tomatoes diced cucumber diced red bell pepper and crumbled feta cheese.
+-Drizzle with lemon vinaigrette dressing and toss to combine.
+-Season with salt and pepper to taste.
+-Chill in the refrigerator before serving.",
+Tomato Basil Bruschetta,Italian,"-Preheat the oven to 375°F (190°C).
+-Place baguette slices on a baking sheet and toast in the oven until golden brown.
+-In a bowl combine diced tomatoes chopped fresh basil minced garlic and a drizzle of olive oil.
+-Season with salt and pepper to taste.
+-Top each toasted baguette slice with the tomato-basil mixture.
+-Drizzle with balsamic glaze before serving.",
+Beef and Broccoli Stir-Fry,Asian,"-In a bowl mix soy sauce oyster sauce sesame oil and cornstarch to create the sauce.
+-In a wok stir-fry thinly sliced beef until browned. Remove from the wok.
+-Stir-fry broccoli florets minced garlic and minced ginger in the same wok.
+-Add the cooked beef back to the wok and pour the sauce over the mixture.
+-Stir until everything is coated and heated through.
+-Serve over cooked white rice.",
+Caprese Salad,Italian,"-Arrange alternating slices of tomatoes and fresh mozzarella on a serving platter.
+-Tuck fresh basil leaves between the slices.
+-Drizzle with balsamic glaze and extra virgin olive oil.
+-Season with salt and pepper to taste.
+-Serve immediately as a refreshing salad.",
+Shrimp Scampi Pasta,Italian,"-Cook linguine pasta according to package instructions.
+-In a skillet sauté minced garlic in olive oil until fragrant.
+-Add shrimp and cook until pink and opaque.
+-Pour in white wine and lemon juice. Simmer until the sauce slightly thickens.
+-Season with red pepper flakes salt and pepper.
+-Toss cooked linguine in the shrimp scampi sauce.
+-Garnish with chopped fresh parsley before serving.",
+Chicken Biryani,Pakistani,"-Marinate chicken with yogurt ginger-garlic paste biryani masala and salt.
+-In a pot sauté sliced onions until golden brown. Remove half for later use.
+-Layer marinated chicken chopped tomatoes half of the fried onions and rice in the pot.
+-Top with ghee green chilies fresh coriander leaves mint leaves and the remaining fried onions.
+-Cover and cook on low heat until the rice is fully cooked and aromatic.
+-Serve hot garnished with additional coriander and mint leaves.",
+Chicken Karahi,Pakistani,"-In a wok (karahi) heat cooking oil and sauté minced garlic until golden brown.
+-Add chicken pieces and cook until browned on all sides.
+-Add chopped tomatoes green chilies ginger and spices. Cook until tomatoes are soft.
+-Cover and simmer until the chicken is tender and the oil separates from the masala.
+-Garnish with fresh coriander leaves and serve hot with naan or rice.",
+Aloo Keema,Pakistani,"-In a pan heat cooking oil and sauté chopped onions until golden brown.
+-Add ginger-garlic paste and sauté until fragrant.
+-Add ground beef and cook until browned. Drain excess oil if needed.
+-Add diced potatoes chopped tomatoes and spices. Mix well.
+-Cover and simmer until the potatoes are tender and the masala is well-cooked.
+-Garnish with fresh coriander leaves and serve hot with naan or rice.",
+Chapli Kebabs,Pakistani,"-In a large bowl mix ground beef chopped onions tomatoes green chilies coriander leaves and pomegranate seeds.
+-Add ginger-garlic paste cumin powder coriander powder red chili powder and salt. Mix well.
+-Add an egg to bind the mixture and form into round flat kebabs.
+-Heat cooking oil in a pan and shallow fry the kebabs until browned on both sides.
+-Serve hot with naan or mint chutney.",
+Saag (Spinach) with Makki di Roti,Pakistani,"-Boil mustard greens and spinach until tender. Drain and blend into a coarse paste.
+-In a pan sauté chopped onions green chilies and grated ginger in ghee until golden brown.
+-Add the greens paste and cook until it thickens.
+-Meanwhile knead cornmeal with water to make a dough. Roll into rotis (flatbreads).
+-Cook the rotis on a griddle until golden brown.
+-Serve hot saag with makki di roti and a dollop of ghee.",
+Japanese Ramen Soup,Japanese,"-Cook ramen noodles according to package instructions and set aside.
+-In a pot combine chicken broth soy sauce mirin and sesame oil. Bring to a simmer.
+-Add sliced shiitake mushrooms and chopped bok choy. Cook until vegetables are tender.
+-Divide the cooked noodles into serving bowls and ladle the hot broth over them.
+-Top with green onions soft-boiled eggs grilled chicken slices and nori.
+-Serve hot and enjoy the authentic Japanese ramen!",
+Moroccan Chickpea Tagine,Moroccan,"-In a tagine or large pot sauté chopped onions and minced garlic until softened.
+-Add diced carrots chopped tomatoes and cooked chickpeas.
+-Season with cumin coriander cinnamon and paprika. Stir to coat.
+-Pour in vegetable broth and bring to a simmer. Cook until carrots are tender.
+-Stir in olives and garnish with fresh cilantro before serving.
+-Serve this flavorful Moroccan dish with couscous or crusty bread.",
+Korean Bibimbap,Korean,"-Arrange cooked white rice in a bowl.
+-Top with beef bulgogi sautéed carrots seasoned spinach grilled zucchini and blanched bean sprouts.
+-Place a fried egg on top and drizzle with gochujang and sesame oil.
+-Sprinkle with toasted sesame seeds before serving.
+-Mix everything together before enjoying this delicious Korean bibimbap!
+-Feel free to customize with additional vegetables or protein.",
+Greek Moussaka,Greek,"-Preheat oven to 375°F (190°C).
+-Sauté sliced eggplants in olive oil until browned. Set aside.
+-In the same pan cook chopped onions and minced garlic until softened.
+-Add ground lamb or beef and brown. Stir in crushed tomatoes red wine and spices.
+-In a separate saucepan make béchamel sauce: melt butter whisk in flour add milk and cook until thickened.
+-Remove from heat and stir in Parmesan cheese and egg yolks.
+-In a baking dish layer eggplants and meat mixture. Top with béchamel sauce.
+-Bake for 40-45 minutes until golden brown. Let it cool before slicing.
+-Serve slices of moussaka warm and enjoy this Greek classic!",
+Butter Chicken (Murgh Makhani),Pakistani,"-Marinate chicken thighs in a mixture of yogurt ginger-garlic paste garam masala and Kashmiri red chili powder.
+-In a pan melt butter and sauté the marinated chicken until browned.
+-Add tomato puree and cook until the oil separates. Stir in heavy cream.
+-Sprinkle kasuri methi sugar and salt. Simmer until the chicken is fully cooked.
+-Serve this creamy butter chicken over rice or with naan for an authentic Pakistani/Indian experience.",
+Thai Green Curry,Thai,"-In a pot simmer green curry paste in coconut milk.
+-Add chicken fish sauce and sugar. Cook until chicken is tender.
+-Stir in sliced eggplant and bell peppers. Simmer until vegetables are cooked.
+-Garnish with fresh basil leaves.
+-Serve hot over jasmine rice and enjoy this Thai classic!",
+Mango Lassi,Indian,"-In a blender combine diced mango yogurt milk honey and cardamom powder.
+-Blend until smooth and creamy.
+-Add ice cubes and blend again until the lassi is chilled.
+-Pour into glasses and garnish with a sprinkle of cardamom.
+-Enjoy this refreshing Mango Lassi!",
+Italian Tiramisu,Italian,"-In a bowl whip heavy cream until stiff peaks form.
+-In another bowl mix mascarpone cheese and sugar until smooth.
+-Gently fold the whipped cream into the mascarpone mixture.
+-Dip ladyfinger cookies into brewed espresso and layer them in a serving dish.
+-Spread a layer of the mascarpone mixture over the cookies.
+-Repeat layers and finish with a dusting of cocoa powder.
+-Chill in the refrigerator for a few hours before serving.
+-Indulge in the decadence of this classic Italian Tiramisu!",
+Turkish Kebabs,Turkish,"-In a bowl mix ground meat grated onions minced garlic chopped parsley and spices.
+-Form the mixture into kebab shapes and grill until fully cooked.
+-Serve the kebabs on flatbread with a drizzle of tahini sauce.
+-Enjoy these flavorful Turkish Kebabs with your favorite sides.",
+Blueberry Banana Smoothie,Smoothie,"-In a blender combine blueberries banana Greek yogurt almond milk and honey.
+-Blend until smooth and creamy.
+-Add chia seeds for extra nutrition and blend briefly.
+-Pour into a glass and enjoy this nutritious Blueberry Banana Smoothie!",
+Mexican Street Corn (Elote),Mexican,"-Grill or roast corn on the cob until kernels are charred.
+-Brush each cob with mayonnaise then sprinkle with crumbled Cotija cheese and chili powder.
+-Serve with lime wedges for squeezing over the top.
+-Enjoy this delicious and flavorful Mexican Street Corn!",
+Russian Borscht,Russian,"-In a pot sauté chopped onions and garlic until softened.
+-Add shredded beets cabbage diced potatoes grated carrots and tomato paste.
+-Pour in broth and add bay leaves. Simmer until vegetables are tender.
+-Serve hot with a dollop of sour cream on top.
+-Enjoy the hearty and comforting flavors of Russian Borscht!",
+South Indian Masala Dosa,Indian,"-In a pan heat ghee and add mustard seeds cumin seeds and curry leaves.
+-Add chopped onions green chilies and turmeric powder. Sauté until onions are golden brown.
+-Mix in boiled and mashed potatoes. Cook until well combined and seasoned.
+-Spread dosa batter on a hot griddle to make thin pancakes.
+-Place a spoonful of the potato mixture in the center fold and serve hot.
+-Pair with coconut chutney for a delicious South Indian meal.",
+Lebanese Falafel Wrap,Lebanese,"-Warm falafel balls according to package instructions.
+-Place a generous serving of falafel in the center of each wrap.
+-Top with diced tomatoes sliced cucumbers red onions shredded lettuce and fresh parsley.
+-Drizzle with tahini sauce and wrap tightly.
+-Enjoy this Lebanese Falafel Wrap filled with fresh and flavorful ingredients!",
+Brazilian Caipirinha,Brazilian,"-In a glass muddle lime wedges with granulated sugar to release the juice.
+-Fill the glass with ice cubes.
+-Pour cachaça over the ice and stir well.
+-Sip and enjoy the refreshing taste of the Brazilian Caipirinha!
+-Adjust sugar and lime to suit your taste preferences.",
+Spanish Patatas Bravas,Spanish,"-Preheat oven to 425°F (220°C).
+-Toss diced potatoes with olive oil minced garlic and smoked paprika. Roast until crispy.
+-In a small saucepan heat tomato sauce mayonnaise and hot sauce. Stir until warm.
+-Drizzle the sauce over the roasted potatoes and garnish with fresh parsley.
+-Serve these flavorful Spanish Patatas Bravas as a delicious appetizer.",
+Vietnamese Fresh Spring Rolls,Vietnamese,"-Dip rice paper wrappers in warm water to soften.
+-Lay a wrapper on a flat surface and fill with shrimp rice vermicelli lettuce carrots cucumber and mint leaves.
+-Fold the sides of the wrapper and roll tightly to seal.
+-Serve these Vietnamese Fresh Spring Rolls with peanut dipping sauce.
+-Enjoy these light and refreshing rolls as a delightful appetizer or snack.",
+Mediterranean Quinoa Salad,Mediterranean,"-In a large bowl combine cooked quinoa cherry tomatoes cucumber olives red onion feta cheese and parsley.
+-Drizzle with lemon vinaigrette dressing and toss to combine.
+-Chill before serving. This Mediterranean Quinoa Salad is perfect as a refreshing side dish.",
+Japanese Matcha Green Tea Ice Cream,Japanese,"-In a saucepan heat heavy cream whole milk and granulated sugar until it begins to steam.
+-Whisk in matcha green tea powder until fully combined.
+-In a separate bowl whisk egg yolks. Slowly pour the hot milk mixture into the yolks whisking continuously.
+-Return the mixture to the saucepan and heat until it thickens. Do not boil.
+-Strain the mixture and let it cool. Churn in an ice cream maker according to the manufacturer's instructions.
+-Freeze until firm. Indulge in the creamy goodness of Japanese Matcha Green Tea Ice Cream!",
+Brazilian Chocolate Brigadeiros,Brazilian,"-In a saucepan combine sweetened condensed milk cocoa powder and unsalted butter.
+-Cook over medium heat stirring constantly until the mixture thickens and pulls away from the pan.
+-Let the mixture cool. Grease your hands with butter and roll into small balls.
+-Coat the brigadeiros in chocolate sprinkles.
+-These Brazilian Chocolate Brigadeiros are a delightful sweet treat!",
+Mexican Chicken Enchiladas,Mexican,"-Preheat oven to 375°F (190°C).
+-In a bowl mix shredded chicken with black beans corn and chopped cilantro.
+-Fill each corn tortilla with the chicken mixture and roll tightly.
+-Place the rolled enchiladas in a baking dish cover with enchilada sauce and sprinkle with shredded cheese.
+-Bake until the cheese is melted and bubbly.
+-Serve hot with a dollop of sour cream. Enjoy these delicious Mexican Chicken Enchiladas!",
+Thai Coconut Shrimp Curry,Thai,"-In a pan simmer coconut milk with red curry paste fish sauce and sugar.
+-Add sliced bell peppers and zucchini. Cook until vegetables are tender.
+-Add shrimp and cook until they turn pink and opaque.
+-Stir in fresh basil leaves.
+-Serve this Thai Coconut Shrimp Curry over jasmine rice for a flavorful meal.",
+Greek Spanakopita,Greek,"-Preheat oven to 375°F (190°C).
+-In a bowl mix cooked chopped spinach with crumbled feta chopped onions beaten eggs olive oil dill salt and pepper.
+-Layer sheets of phyllo dough in a baking dish brushing each layer with olive oil.
+-Spread the spinach and feta mixture over the phyllo layers.
+-Top with more phyllo layers brushing each with olive oil.
+-Bake until golden brown. Slice and serve this delicious Greek Spanakopita!",
+Moroccan Couscous Salad,Moroccan,"-In a large bowl combine cooked couscous chickpeas cherry tomatoes cucumber red onion mint leaves and crumbled feta.
+-Drizzle with lemon vinaigrette dressing and toss to combine.
+-Chill before serving. This Moroccan Couscous Salad makes a refreshing side dish.",
+Classic Mojito,Cocktail,"-In a glass muddle fresh mint leaves with granulated sugar and lime wedges to release the flavors.
+-Add white rum and stir well.
+-Fill the glass with ice cubes and top with club soda.
+-Stir gently and garnish with a sprig of mint.
+-Sip and enjoy the classic and refreshing taste of a Mojito!",
+Caprese Bruschetta,Italian,"-Preheat the oven broiler.
+-Place baguette slices on a baking sheet and toast under the broiler until golden.
+-In a bowl combine diced tomatoes sliced fresh mozzarella minced garlic and chopped fresh basil.
+-Drizzle with olive oil balsamic glaze and season with salt and pepper.
+-Spoon the tomato and mozzarella mixture onto the toasted baguette slices.
+-Serve these delightful Caprese Bruschettas as a quick and tasty appetizer.",
+Teriyaki Chicken Stir-Fry,Japanese,"-In a wok or skillet heat sesame oil and sauté minced garlic and grated ginger until fragrant.
+-Add thinly sliced chicken and cook until browned.
+-Stir in broccoli florets sliced bell peppers and julienned carrots. Cook until vegetables are tender-crisp.
+-Pour soy sauce and teriyaki sauce over the stir-fry. Toss to combine.
+-Serve this quick Teriyaki Chicken Stir-Fry over cooked rice for a delicious meal.",
+Mango Avocado Salsa,Mexican,"-In a bowl combine diced mango diced avocado finely chopped red onion and chopped cilantro.
+-Drizzle with fresh lime juice and season with salt and pepper. Toss gently to combine.
+-Serve this refreshing Mango Avocado Salsa with tortilla chips for a quick and tasty snack.",
+Shrimp and Asparagus Stir-Fry,Asian,"-In a wok or skillet heat sesame oil and sauté minced garlic grated ginger and red pepper flakes until fragrant.
+-Add shrimp and cook until they turn pink and opaque.
+-Stir in asparagus pieces and cook until crisp-tender.
+-Pour soy sauce over the stir-fry and toss to combine.
+-Serve this quick Shrimp and Asparagus Stir-Fry over cooked noodles or rice.",
+Italian Margherita Pizza,Italian,"-Preheat the oven to the highest temperature your oven can go.
+-Roll out pizza dough on a floured surface and transfer to a pizza stone or baking sheet.
+-Brush the dough with olive oil and sprinkle minced garlic over the surface.
+-Arrange thinly sliced tomatoes and fresh mozzarella slices on the dough.
+-Bake until the crust is golden and the cheese is melted and bubbly.
+-Top with fresh basil leaves and season with salt and pepper. Slice and serve this classic Margherita Pizza.",
+Pesto Pasta with Cherry Tomatoes,Italian,"-Cook penne pasta according to package instructions. Drain and set aside.
+-In a pan warm basil pesto sauce. Add cooked pasta and toss to coat evenly.
+-Stir in halved cherry tomatoes and cook until they soften slightly.
+-Season with salt and black pepper to taste. Garnish with grated Parmesan cheese.
+-Serve this quick and flavorful Pesto Pasta with Cherry Tomatoes for a delicious meal.",
+Hawaiian Chicken Skewers,Hawaiian,"-Preheat the grill or grill pan.
+-In a bowl whisk together soy sauce pineapple juice ketchup brown sugar and minced garlic to make the marinade.
+-Thread chicken chunks pineapple chunks bell pepper slices and red onion wedges onto soaked wooden skewers.
+-Brush the skewers with the marinade and grill until the chicken is cooked through.
+-Serve these Hawaiian Chicken Skewers with rice or as a tasty appetizer.",
+Cucumber Avocado Rolls,Japanese,"-Place a sheet of nori on a bamboo sushi rolling mat.
+-Spread seasoned sushi rice evenly over the nori leaving a small border at the top.
+-Arrange julienned cucumber and sliced avocado along the bottom edge of the rice.
+-Roll the nori tightly from the bottom using the bamboo mat to shape the roll.
+-Slice the roll into bite-sized pieces. Serve these refreshing Cucumber Avocado Rolls with soy sauce pickled ginger and wasabi.",
+Mediterranean Chickpea Salad,Mediterranean,"-In a large bowl combine chickpeas cherry tomatoes cucumber red onion olives and feta cheese.
+-In a small bowl whisk together olive oil lemon juice dried oregano salt and pepper to make the dressing.
+-Pour the dressing over the salad and toss gently to combine.
+-Chill before serving. Enjoy this quick and refreshing Mediterranean Chickpea Salad.",
+Pineapple Coconut Smoothie,Smoothie,"-In a blender combine pineapple chunks coconut milk Greek yogurt banana and honey.
+-Blend until smooth and creamy.
+-Add ice cubes and blend again until the smoothie is chilled.
+-Pour into a glass and enjoy the tropical goodness of this Pineapple Coconut Smoothie!",

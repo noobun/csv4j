@@ -1,0 +1,7 @@
+# Template for test 3
+tables:
+  - path: classes
+    name: "classes"
+    body:
+      class: $head$
+      days: $value$

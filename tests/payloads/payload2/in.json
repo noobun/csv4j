@@ -1,0 +1,158 @@
+{
+    "shop": "La doi pasi",
+    "liquide": [
+        {
+            "id": "LQ-1001",
+            "name": "Sparkling Mineral Water",
+            "price": 1.20,
+            "currency": "EUR",
+            "stock": 320,
+            "expiry_date": "2027-06-01",
+            "volume_l": 0.5,
+            "color": "clear",
+            "alcohol": false,
+            "vendor": "AquaPure",
+            "tags": [
+                "water",
+                "sparkling",
+                "refreshing"
+            ]
+        },
+        {
+            "id": "LQ-1002",
+            "name": "Red Wine - Crianza",
+            "price": 8.50,
+            "currency": "EUR",
+            "stock": 45,
+            "expiry_date": "2030-12-31",
+            "volume_l": 0.75,
+            "color": "red",
+            "alcohol": true,
+            "grape": "Tempranillo",
+            "vintage": 2020,
+            "vendor": "Vinhas",
+            "tags": [
+                "wine",
+                "alcoholic"
+            ]
+        },
+        {
+            "id": "LQ-1003",
+            "name": "Cold-Pressed Apple Juice",
+            "price": 2.75,
+            "currency": "EUR",
+            "stock": 120,
+            "expiry_date": "2026-01-10",
+            "volume_l": 1.0,
+            "color": "amber",
+            "alcohol": false,
+            "no_sugar_added": true,
+            "vendor": "CitrusCo",
+            "tags": [
+                "juice",
+                "fruit"
+            ]
+        }
+    ],
+    "meat": [
+        {
+            "id": "ME-2001",
+            "name": "Chicken Breast (Skinless)",
+            "price": 5.49,
+            "currency": "EUR",
+            "stock": 60,
+            "expiry_date": "2025-12-20",
+            "meat_type": "poultry",
+            "placement": "refrigerator",
+            "weight_kg": 0.25,
+            "organic": true,
+            "vendor": "FarmFresh Meats",
+            "tags": [
+                "poultry",
+                "fresh"
+            ]
+        },
+        {
+            "id": "ME-2002",
+            "name": "Ground Beef 15% Fat",
+            "price": 4.75,
+            "currency": "EUR",
+            "stock": 40,
+            "expiry_date": "2025-12-22",
+            "meat_type": "beef",
+            "placement": "refrigerator",
+            "weight_kg": 0.5,
+            "minced": true,
+            "vendor": "PrimeCuts",
+            "origin_farm": "GreenPastures",
+            "tags": [
+                "beef",
+                "ground"
+            ]
+        }
+    ],
+    "snack": [
+        {
+            "id": "SN-3001",
+            "name": "Salted Potato Chips",
+            "price": 1.99,
+            "currency": "EUR",
+            "stock": 200,
+            "weight_g": 150,
+            "flavor": "salted",
+            "ingredients": [
+                "potatoes",
+                "sunflower oil",
+                "salt"
+            ],
+            "vegan": true,
+            "vendor": "CrispyWorks",
+            "tags": [
+                "chips",
+                "snack"
+            ]
+        },
+        {
+            "id": "SN-3002",
+            "name": "Dark Chocolate Bar 72%",
+            "price": 0.89,
+            "currency": "EUR",
+            "stock": 180,
+            "weight_g": 85,
+            "flavor": "dark chocolate",
+            "ingredients": [
+                "cocoa mass",
+                "sugar",
+                "cocoa butter"
+            ],
+            "vegan": false,
+            "contains_nuts": true,
+            "vendor": "SweetLeaf",
+            "tags": [
+                "chocolate",
+                "snack"
+            ]
+        },
+        {
+            "id": "SN-3003",
+            "name": "Roasted Mixed Nuts",
+            "price": 3.49,
+            "currency": "EUR",
+            "stock": 90,
+            "weight_g": 200,
+            "nuts": [
+                "almond",
+                "cashew",
+                "hazelnut"
+            ],
+            "salted": false,
+            "vegan": true,
+            "vendor": "NuttyGood",
+            "tags": [
+                "nuts",
+                "snack",
+                "protein"
+            ]
+        }
+    ]
+}

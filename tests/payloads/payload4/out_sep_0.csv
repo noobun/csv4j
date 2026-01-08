@@ -1,0 +1,4 @@
+class,days,
+eng,mon*fri,
+math,thu,
+phy,mon*thu*fri,

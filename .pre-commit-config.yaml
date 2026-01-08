@@ -1,0 +1,36 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+# -   repo: https://github.com/psf/black
+#     rev: 22.10.0
+#     hooks:
+#     -   id: black
+- repo: https://github.com/python-jsonschema/check-jsonschema
+  rev: '0.36.0'
+  hooks:
+    - id: check-jsonschema
+      # not necessary, but can be useful for `pre-commit run` if you have other `check-jsonschema` hooks
+      alias: check-jsonschema-meta
+      name: Validate meta files
+      args: ["--schemafile", "schemas/my_schema.json"]
+      types_or: []  # reset to default
+      files: ^data/.*\.meta$
+-   repo: https://github.com/pycqa/flake8
+    rev: '7.3.0'  # pick a git hash / tag to point to
+    hooks:
+    -   id: flake8
+-   repo: https://github.com/hhatto/autopep8
+    rev: 'v2.3.2'  # select the tag or revision you want, or run `pre-commit autoupdate`
+    hooks:
+    -   id: autopep8
+# - repo: local
+#   hooks:
+#     - id: Locat Test Script
+#       name: Local Test Script
+#       entry: test.sh
+#       language: script
+#       pass_filenames: false

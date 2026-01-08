@@ -1,0 +1,8 @@
+# Template for test 5
+tables:
+  - path: .
+    name: "recipes"
+    body:
+      recipe name: name
+      recipe cuisine: cuisine
+      recipe steps: instructions

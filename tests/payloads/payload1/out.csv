@@ -1,0 +1,7 @@
+cpu.core,cpu.usage,ram.name,ram.total,ram.user,disk.name,disk.total,disk.user,
+,,r1,2048,1024,/,2048,1024,
+,,r2,2048,1,,,,
+,,r3,2048,512,,,,
+,,r4,2048,2048,,,,
+,,r5,2048,8,,,,
+,,r6,2048,16,,,,

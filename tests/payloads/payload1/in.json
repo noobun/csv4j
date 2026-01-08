@@ -1,0 +1,43 @@
+{
+    "ram": {
+        "devices": [
+            {
+                "name": "r1",
+                "total": 2048,
+                "used": 1024
+            },
+            {
+                "name": "r2",
+                "total": 2048,
+                "used": 1
+            },
+            {
+                "name": "r3",
+                "total": 2048,
+                "used": 512
+            },
+            {
+                "name": "r4",
+                "total": 2048,
+                "used": 2048
+            },
+            {
+                "name": "r5",
+                "total": 2048,
+                "used": 8
+            },
+            {
+                "name": "r6",
+                "total": 2048,
+                "used": 16
+            }
+        ]
+    },
+    "disks": [
+        {
+            "mount": "/",
+            "size": 2048,
+            "used": 1024
+        }
+    ]
+}

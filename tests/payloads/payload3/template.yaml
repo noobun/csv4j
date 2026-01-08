@@ -1,0 +1,30 @@
+# Template for test 3
+tables:
+  - path: cpu//cores
+    name: "cpu"
+    body:
+      cpu.core: $head$
+      cpu.usage: $value$
+  - path: cpu//usage
+    name: "cpu usage"
+    body:
+      cpu.topic: $head$
+      cpu.max: top
+  - path: ram//devices
+    name: "ram"
+    body:
+      ram.name: name
+      ram.total: total
+      ram.user: used
+  - path: disks
+    name: "disks"
+    body:
+      disk.name: mount
+      disk.total: size
+      disk.user: used
+  - path: devices
+    name: "devices"
+    body:
+      device.id: $head$
+      device.type: type
+      device.vendor: vendor//producer

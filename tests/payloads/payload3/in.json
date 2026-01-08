@@ -1,0 +1,72 @@
+{
+    "cpu": {
+        "cores": {
+            "0": "20",
+            "1": "30"
+        },
+        "usage": {
+            "shell": {
+                "top": 10,
+                "avg": 5,
+                "min": 1
+            },
+            "vout": {
+                "top": 60,
+                "avg": 50,
+                "min": 30
+            }
+        }
+    },
+    "ram": {
+        "devices": [
+            {
+                "name": "r1",
+                "total": 2048,
+                "used": 1024
+            },
+            {
+                "name": "r2",
+                "total": 2048,
+                "used": 1
+            },
+            {
+                "name": "r3",
+                "total": 2048,
+                "used": 512
+            },
+            {
+                "name": "r4",
+                "total": 2048,
+                "used": 2048
+            },
+            {
+                "name": "r5",
+                "total": 2048,
+                "used": 8
+            },
+            {
+                "name": "r6",
+                "total": 2048,
+                "used": 16
+            }
+        ]
+    },
+    "disks": [
+        {
+            "mount": "/",
+            "size": 2048,
+            "used": 1024
+        }
+    ],
+    "devices": {
+        "bsjanksjc12": {
+            "type": "usb",
+            "mount": "NULL",
+            "size": "64",
+            "vendor": {
+                "producer": "SanDik",
+                "date": "11-11-2011"
+            }
+        }
+    }
+}

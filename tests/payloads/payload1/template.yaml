@@ -1,0 +1,19 @@
+# Template for test 1
+tables:
+  - path: cpu
+    name: "cpu"
+    body:
+      cpu.core: $head$
+      cpu.usage: $value$
+  - path: ram//devices
+    name: "ram"
+    body:
+      ram.name: name
+      ram.total: total
+      ram.user: used
+  - path: disks
+    name: "disks"
+    body:
+      disk.name: mount
+      disk.total: size
+      disk.user: used
