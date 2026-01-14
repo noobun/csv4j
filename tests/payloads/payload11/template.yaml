@@ -1,0 +1,7 @@
+# Template for test 9
+tables:
+  - path: catalog//classes
+    name: "classes array"
+    body:
+      class: "class"
+      childs: "number"

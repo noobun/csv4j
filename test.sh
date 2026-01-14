@@ -1,8 +1,25 @@
 #!/bin/bash
-# Check if -r flag is provided for release mode
-if [ "$1" = "-r" ]; then
-    RELEASE_MODE=true
+# Parse flags: -r for release mode, -d to include directories starting
+# with '__' when running payload tests. Export an env var consumed by
+# the pytest loaders in `tests/`.
+RELEASE_MODE=false
+INCLUDE_DUNDERS=false
+for arg in "$@"; do
+    case "$arg" in
+        -r)
+            RELEASE_MODE=true
+            ;;
+        -d)
+            INCLUDE_DUNDERS=true
+            ;;
+    esac
+done
+
+if [ "$INCLUDE_DUNDERS" = true ]; then
+    export CSV4J_INCLUDE_DUNDERS=1
 fi
+
+rm dump/*
 
 #source venv/bin/activate
 echo -e "\nStart black..."

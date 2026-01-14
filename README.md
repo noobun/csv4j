@@ -19,7 +19,6 @@ python3 src/csv4j.py -i <input.json> -t <template.yaml> -o <output.csv>
   - `-o, --output`: Output CSV file (required)
   - `-t, --template`: Template YAML file (required)
   - `-s, --sep`: CSV separator character (optional; one of `,`, `|`, `;`; default: `,`)
-  - `-s, --sep`: CSV separator character (optional; one of `,`, `|`, `;`; default: `,`)
   - `-ml, --multiline`: Emit list-type cells as multiple lines when present; otherwise lists are joined inline (optional; default: off)
 
 - Verbosity:

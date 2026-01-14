@@ -14,6 +14,7 @@ import yaml  # type: ignore
 import json
 from typing import TypedDict
 import time
+import re
 
 # Add a custom TRACE level (below DEBUG) for very verbose diagnostics.
 TRACE_LEVEL_NUM = 9
@@ -67,7 +68,8 @@ class Template:
         "description": "Schema for the YAML template used by csv4j (validate with jsonschema)",
         "type": "object",
         "properties": {
-            "tables": {"type": "array", "items": {"$ref": "#/definitions/table"}}
+            "tables": {"type": "array", "items": {"$ref": "#/definitions/table"}},
+            "pipes": {"type": "object", "items": {"$ref": "#/definitions/pipes"}},
         },
         "additionalProperties": False,
         "definitions": {
@@ -94,7 +96,14 @@ class Template:
                 },
                 "required": ["body"],
                 "additionalProperties": False,
-            }
+            },
+            "pipes": {
+                "type": "object",
+                "description": "A pipe of the size of the entire table",
+                "properties": {},
+                "required": [],
+                "additionalProperties": False,
+            },
         },
     }
 
@@ -373,8 +382,6 @@ class Csv4J:
             # into nested objects/arrays in the input JSON.
             path = table.get("path", None)
 
-            # TODO: Enable here recursive function to process nested wildcards in paths
-
             recursive_results = (
                 self.__recursive_process_path(blob, path) if path else [blob]
             )
@@ -396,9 +403,37 @@ class Csv4J:
             max_rows = max(max_rows, boilerplate["nrows"])  # type: ignore[assignment]
 
             table_payload.append(boilerplate)
-            self.logger.info("done table.")
+            self.logger.debug(f"boilerplate: {boilerplate}")  # type: ignore[attr-defined]
+            self.logger.info(f"{boilerplate['name']} table done.")
 
         self.logger.debug(f"max rows: {max_rows}, max cols: {max_cols}")
+
+        if len(template.get("pipes", {})) > 0:
+            self.logger.info("starting pipes processing")
+            for pipe_k, pipe_v in template.get("pipes", {}).items():
+                self.logger.info(f"processing pipe: {pipe_k}")
+                dump = set(self.__recursive_process_path(in_stream, pipe_v))
+                if len(dump) == 1:
+                    pass
+                elif len(dump) > 1:
+                    self.logger.warning(
+                        f"pipe '{pipe_k}' produced multiple values; only the first will be used"
+                    )
+                    dump = set(list(dump)[:1])
+                else:
+                    self.logger.warning(
+                        f"pipe '{pipe_k}' produced no values; using NONE string"
+                    )
+                    dump = set(["NONE"])
+                pipe_boilerplate: Boilerplate = {
+                    "name": pipe_k,
+                    "ncols": 1,
+                    "nrows": max_rows,
+                    "header": [pipe_k],
+                    "rows": [[list(dump)[0]]] * max_rows,
+                }
+                self.logger.debug(f"pipe boilerplate: {pipe_boilerplate}")
+                table_payload.append(pipe_boilerplate)
 
         # Compose final CSV-like payload. Each row index across all matrices
         # is concatenated with the separator character. The final trailing separator
@@ -428,11 +463,11 @@ class Csv4J:
         # Recursively process a path within a blob
         payload = []
         self.logger.trace(
-            f"\n\nresursive at start: {blob}, path: {path}, wildcard: {wildcard}"
+            f"\nresursive at start: {blob}, path: {path}, wildcard: {wildcard}"
         )
         for step in path.split("//"):
             self.logger.trace(
-                f"\n\nresursive at step: {blob}, path: {path}, wildcard: {wildcard}"
+                f"\nresursive at step: {blob}, path: {path}, wildcard: {wildcard}"
             )
             path = "//".join(path.split("//")[1:])
             if step in blob:
@@ -511,7 +546,10 @@ class Csv4J:
         for index in range(0, max_rows + 1):
             for matrix in main_matrix:
                 payload += sep.join(matrix[index]) + sep
-            payload += "\n"
+
+            payload = payload[:-1]
+            if index < max_rows:
+                payload += "\n"
 
         return payload
 
@@ -548,6 +586,51 @@ class Csv4J:
                     )
         return incoming
 
+    def __cleanup_protect_boilerplate(self, payload_row: list, sep, multiline) -> list:
+        # Cleanup rows
+        for index in range(len(payload_row)):
+            # Lists: support two behaviors controlled by the `multiline` flag.
+            # - If `multiline` is True, emit each list item on its own line,
+            #   prefixing lines with a dash ("-") and preserving newlines.
+            # - If `multiline` is False, join items inline with a dash.
+            if isinstance(payload_row[index], list):
+                # Convert each element to str first (defensive) then join
+                cleaned_items = [
+                    " ".join(str(i).replace(sep, " ").strip().split())
+                    for i in payload_row[index]
+                ]
+                if multiline:
+                    # Multiline output: prefix first line with '-' and separate
+                    # subsequent items with a newline+dash so the visual format
+                    # matches the previous behavior while controlled by flag.
+                    payload_row[index] = '"-' + "\n-".join(cleaned_items) + '"'
+                else:
+                    # Single-line output: join with a dash and wrap in quotes
+                    payload_row[index] = "*".join(cleaned_items)
+                self.logger.trace(  # type: ignore[attr-defined]
+                    "warning: complex types (list) are not supported in output; converting to string"
+                )
+            elif isinstance(payload_row[index], dict):
+                # Dicts are flattened to a single-line-ish representation
+                payload_row[index] = (
+                    str(payload_row[index])
+                    .replace("\n", "\n-")
+                    .replace("\r", " ")
+                    .replace(sep, " ")
+                )
+                self.logger.trace(  # type: ignore[attr-defined]
+                    "warning: complex types (dict) are not supported in output; converting to string"
+                )
+            else:
+                # Primitive values: coerce to str and remove raw newlines and separator
+                payload_row[index] = (
+                    str(payload_row[index])
+                    .replace("\n", " ")
+                    .replace("\r", " ")
+                    .replace(sep, " ")
+                )
+        return payload_row
+
     def __process_table(
         self, boilerplate, blob, body, sep, multiline, wildcard_keys=[]
     ) -> None:
@@ -563,128 +646,35 @@ class Csv4J:
         """
         # Each element in blob is expected to be an entry we can map
         for b in blob:
+            self.logger.trace(f"processing blob entry: {b}")  # type: ignore[attr-defined]
             payload_row: list[str] = []
-            if type(blob) is list:
-                self.__process_cell_list(
-                    body=body,
-                    blob=blob,
-                    b=b,
-                    upstream=payload_row,
-                    wildcard_keys=wildcard_keys,
-                )
-            elif type(blob) is dict:
-                self.__process_cell_dict(
-                    body=body,
-                    blob=blob,
-                    b=b,
-                    upstream=payload_row,
-                    wildcard_keys=wildcard_keys,
-                )
-            else:
-                payload_row = ["NULL"] * len(body.items())
+            for entry_key, entry_path in body.items():
+                finished = False
 
-            # Cleanup rows
-            for index in range(len(payload_row)):
-                # Lists: support two behaviors controlled by the `multiline` flag.
-                # - If `multiline` is True, emit each list item on its own line,
-                #   prefixing lines with a dash ("-") and preserving newlines.
-                # - If `multiline` is False, join items inline with a dash.
-                if isinstance(payload_row[index], list):
-                    # Convert each element to str first (defensive) then join
-                    cleaned_items = [
-                        " ".join(str(i).replace(sep, " ").strip().split())
-                        for i in payload_row[index]
-                    ]
-                    if multiline:
-                        # Multiline output: prefix first line with '-' and separate
-                        # subsequent items with a newline+dash so the visual format
-                        # matches the previous behavior while controlled by flag.
-                        payload_row[index] = '"-' + "\n-".join(cleaned_items) + '"'
+                if type(blob) is list:
+                    entries = b
+                    if entry_path == "$|$":
+                        # for value in entries:
+                        boilerplate["rows"].append(
+                            self.__cleanup_protect_boilerplate(
+                                [entries], sep=sep, multiline=multiline
+                            )
+                        )  # type: ignore[union-attr]
+                        continue
+                elif type(blob) is dict:
+                    entries = blob[b]
+                    if entry_path == "$head$":
+                        payload_row.append(b)
+                        continue
+                    elif entry_path == "$value$":
+                        payload_row.append(blob.get(b, "NULL"))
+                        continue
                     else:
-                        # Single-line output: join with a dash and wrap in quotes
-                        payload_row[index] = "*".join(cleaned_items)
-                    self.logger.trace(  # type: ignore[attr-defined]
-                        "warning: complex types (list) are not supported in output; converting to string"
-                    )
-                elif isinstance(payload_row[index], dict):
-                    # Dicts are flattened to a single-line-ish representation
-                    payload_row[index] = (
-                        str(payload_row[index])
-                        .replace("\n", "\n-")
-                        .replace("\r", " ")
-                        .replace(sep, " ")
-                    )
-                    self.logger.trace(  # type: ignore[attr-defined]
-                        "warning: complex types (dict) are not supported in output; converting to string"
-                    )
+                        pass
                 else:
-                    # Primitive values: coerce to str and remove raw newlines and separator
-                    payload_row[index] = (
-                        str(payload_row[index])
-                        .replace("\n", " ")
-                        .replace("\r", " ")
-                        .replace(sep, " ")
-                    )
+                    payload_row = ["NULL"] * len(body.items())
+                    continue
 
-            boilerplate["rows"].append(payload_row)  # type: ignore[union-attr]
-
-            # Record table dimensions
-            boilerplate["ncols"] = len(boilerplate["header"])  # type: ignore[arg-type]
-            boilerplate["nrows"] = len(boilerplate["rows"])  # type: ignore[arg-type]
-
-    def __process_cell_list(self, body, blob, b, upstream, wildcard_keys=[]) -> None:
-        """Extract cell values from a list blob using JSON paths.
-
-        Args:
-            body (dict): Mapping of column names to JSON paths.
-            blob (list): The list blob containing data entries.
-            b: Current entry being processed.
-            upstream (list): List to append extracted values to.
-            wildcard_keys (list): List of wildcard capture keys (default: []).
-        """
-        # For each mapping in the body, walk nested keys separated by '//'
-        for entry_key, entry_path in body.items():
-            entries = b
-            for step in entry_path.split("//"):
-                self.logger.trace(f"step: {step}, entries: {entries}")  # type: ignore[attr-defined]
-                if step in entries.keys():
-                    entries = entries.get(step, {})
-                elif step == "*":
-                    # Wildcard step: capture all values at this level as a list
-                    entries = list(entries.values())
-                    self.logger.trace(f"wildcard entries: {entries}")  # type: ignore[attr-defined]
-                elif step == "$0$":
-                    entries = wildcard_keys
-                else:
-                    entries = None
-                    break
-
-            if entries is None:
-                # Missing sub-path — log and skip the cell
-                self.logger.warning(
-                    f"warning: path '{entry_path}' not found in input JSON"
-                )
-                continue
-            else:
-                upstream.append(entries)
-
-    def __process_cell_dict(self, body, blob, b, upstream, wildcard_keys=[]) -> None:
-        """Extract cell values from a dict blob using JSON paths.
-
-        Args:
-            body (dict): Mapping of column names to JSON paths.
-            blob (dict): The dict blob containing data.
-            b (str): Current key being processed.
-            upstream (list): List to append extracted values to.
-            wildcard_keys (list): List of wildcard capture keys (default: []).
-        """
-        for entry_key, entry_path in body.items():
-            entries = blob[b]
-            if entry_path == "$head$":
-                upstream.append(b)
-            elif entry_path == "$value$":
-                upstream.append(blob.get(b, "NULL"))
-            else:
                 for step in entry_path.split("//"):
                     self.logger.trace(f"step: {step}, entries: {entries}")  # type: ignore[attr-defined]
                     if step in entries.keys():
@@ -693,18 +683,34 @@ class Csv4J:
                         # Wildcard step: capture all values at this level as a list
                         entries = list(entries.values())
                         self.logger.trace(f"wildcard entries: {entries}")  # type: ignore[attr-defined]
+                    elif len([x for x in entries.keys() if re.match(step, x)]) > 0:
+                        matched_key = [x for x in entries.keys() if re.match(step, x)][
+                            0
+                        ]
+                        entries = entries.get(matched_key, {})
                     elif step == "$0$":
                         entries = wildcard_keys
                     else:
                         entries = None
                         break
-                if entries is None:
+                else:
+                    finished = True
+
+                if entries is None and not finished:
+                    # Missing sub-path — log and skip the cell
                     self.logger.warning(
                         f"warning: path '{entry_path}' not found in input JSON"
                     )
                     continue
                 else:
-                    upstream.append(entries)
+                    payload_row.append(entries)
+
+            if len(payload_row) > 0:
+                boilerplate["rows"].append(self.__cleanup_protect_boilerplate(payload_row, sep=sep, multiline=multiline))  # type: ignore[union-attr]
+
+            # Record table dimensions
+            boilerplate["ncols"] = len(boilerplate["header"])  # type: ignore[arg-type]
+            boilerplate["nrows"] = len(boilerplate["rows"])  # type: ignore[arg-type]
 
 
 def main(args=None):

@@ -1,0 +1,13 @@
+# Template for test 7
+tables:
+  - path: catalog//classes//*//childs
+    name: "childs db"
+    body:
+      class: $0$
+      name: $head$
+      grade.math: math
+      grade.english: english
+      grade.science: science
+      misses: misses
+pipes:
+  date: timestamp
