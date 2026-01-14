@@ -1,4 +1,4 @@
-liquide.id,liquide.name,liquide.price,meat.id,meat.name,
-LQ-1001,Sparkling Mineral Water,1.2,ME-2001,Chicken Breast (Skinless),
-LQ-1002,Red Wine - Crianza,8.5,ME-2002,Ground Beef 15% Fat,
-LQ-1003,Cold-Pressed Apple Juice,2.75,,,
+liquide.id,liquide.name,liquide.price,meat.id,meat.name
+LQ-1001,Sparkling Mineral Water,1.2,ME-2001,Chicken Breast (Skinless)
+LQ-1002,Red Wine - Crianza,8.5,ME-2002,Ground Beef 15% Fat
+LQ-1003,Cold-Pressed Apple Juice,2.75,,

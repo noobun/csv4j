@@ -42,7 +42,8 @@
                     "I. J.": {
                         "math": 6,
                         "english": 8,
-                        "science": 7
+                        "science": 7,
+                        "misses": []
                     }
                 }
             },

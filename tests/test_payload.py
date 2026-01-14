@@ -16,10 +16,11 @@ TEST_CASES_DIR = Path(__file__).parent / "payloads"
 
 def load_test_cases():
     """Discover all test case directories."""
+    include_dunders = os.environ.get("CSV4J_INCLUDE_DUNDERS", "") != ""
     return [
         case_dir
         for case_dir in TEST_CASES_DIR.iterdir()
-        if case_dir.is_dir() and not case_dir.name.startswith("__")
+        if case_dir.is_dir() and (include_dunders or not case_dir.name.startswith("__"))
     ]
 
 
