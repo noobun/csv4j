@@ -1,0 +1,9 @@
+# Template for test 13
+tables:
+  - path: history//*//classes//*
+    name: "history db"
+    body:
+      date: $0$
+      class: $1$
+      prof: $head$
+      lessons: lessons

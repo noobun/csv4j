@@ -20,6 +20,7 @@ if [ "$INCLUDE_DUNDERS" = true ]; then
 fi
 
 rm dump/*
+rm csv4j.log
 
 #source venv/bin/activate
 echo -e "\nStart black..."
@@ -45,7 +46,7 @@ mypy src/**.py
 
 echo -e "\nStart pytest..."
 echo "######################"
-pytest ./tests/test_main.py ./tests/test_payload.py -v --tb=no
+pytest ./tests/test_main.py ./tests/test_payload.py ./tests/test_specials.py -v #--tb=no
 
 if [ "$RELEASE_MODE" = true ]; then
     # Release mode: build, create venv, install wheel, and test

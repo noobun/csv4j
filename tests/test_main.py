@@ -2,14 +2,14 @@
 import sys
 import os
 from pathlib import Path
+from types import NoneType
 import pytest
-import jsonschema
 
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
 )
 
-from csv4j import Csv4J, Template  # noqa: E402
+from csv4j import Csv4J  # noqa: E402
 
 # tests/test_module_a.py
 
@@ -26,18 +26,8 @@ def load_test_cases():
     ]
 
 
-@pytest.mark.parametrize(
-    "case_dir",
-    load_test_cases(),
-    ids=lambda p: p.name,  # test names: test1, test2, ...
-)
-def test_init(case_dir):
-    c = Csv4J(
-        case_dir / "in.json",
-        f"dump/{case_dir.name}.csv",
-        case_dir / "template.yaml",
-        1,
-    )
+def test_init():
+    c = Csv4J(1)
     assert type(c) is Csv4J
 
 
@@ -47,13 +37,9 @@ def test_init(case_dir):
     ids=lambda p: p.name,  # test names: test1, test2, ...
 )
 def test_file_validation_pass(case_dir):
-    c = Csv4J(
-        case_dir / "in.json",
-        f"dump/{case_dir.name}.csv",
-        case_dir / "template.yaml",
-        1,
-    )
-    assert c.validate_paths() is False
+    c = Csv4J(1)
+    assert type(c.load_input(Path(case_dir / "in.json"))) is dict
+    assert type(c.load_template(Path(case_dir / "template.yaml"))) is dict
 
 
 @pytest.mark.parametrize(
@@ -62,35 +48,15 @@ def test_file_validation_pass(case_dir):
     ids=lambda p: p.name,  # test names: test1, test2, ...
 )
 def test_file_validation_failed(case_dir):
-    c = Csv4J(
-        case_dir / "ins.json",
-        f"dump/{case_dir.name}.csv",
-        case_dir / "template.yaml",
-        1,
-    )
-    assert c.validate_paths() is True
-
-
-@pytest.mark.parametrize(
-    "case_dir",
-    load_test_cases(),
-    ids=lambda p: p.name,  # test names: test1, test2, ...
-)
-def test_template_validate_pass(case_dir):
-    t = Template(case_dir / "template.yaml")
-    try:
-        t.validate()
-    except (jsonschema.exceptions.ValidationError, jsonschema.exceptions.SchemaError):
-        assert False, "Template validation failed unexpectedly"
-
-    assert True
+    c = Csv4J(1)
+    assert type(c.load_input(Path(case_dir / "ins.json"))) is NoneType
 
 
 def test_template_validate_fail():
-    t = Template("tests/payloads/failed_template.yaml")
+    t = Path("tests/payloads/failed_template.yaml")
+    c = Csv4J(1)
     try:
-        t.validate()
+        c.load_template(t)
     except Exception:
         assert True
-
     # assert False, "Template validation passed expectedly"
