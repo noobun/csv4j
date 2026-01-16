@@ -1,0 +1,78 @@
+{
+    "catalog": {
+        "childs": {
+            "A. B.": {
+                "math": 5,
+                "english": 8,
+                "science": 7,
+                "misses": [
+                    "21-10-2024",
+                    "1-9-2025"
+                ],
+                "identification": {
+                    "sex": "f"
+                }
+            },
+            "C. D.": {
+                "math": 9,
+                "english": 6,
+                "science": 8
+            },
+            "E. F.": {
+                "math": 7,
+                "english": 9,
+                "science": 6,
+                "identification": {
+                    "sex": "f"
+                }
+            },
+            "G. H.": {
+                "math": 8,
+                "english": 7,
+                "misses": [],
+                "identification": {
+                    "sex": "f"
+                }
+            },
+            "I. J.": {
+                "math": 6,
+                "english": 8,
+                "science": 7,
+                "identification": {
+                    "sex": "m"
+                }
+            },
+            "K. L.": {
+                "math": 9,
+                "english": 9,
+                "misses": [
+                    "9-10-2024",
+                    "18-11-2024"
+                ],
+                "science": 8,
+                "identification": {
+                    "sex": "f"
+                }
+            },
+            "M. N.": {
+                "english": 6,
+                "science": 9,
+                "identification": {
+                    "sex": "f"
+                }
+            },
+            "O. P.": {
+                "misses": [
+                    "25-11-2024",
+                    "2-12-2024",
+                    "16-12-2024"
+                ],
+                "math": 8,
+                "science": 7,
+                "identification": {
+                    "sex": "m"
+                }
+            }
+        }
+    }
+}

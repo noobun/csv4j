@@ -12,9 +12,10 @@ import logging
 from pathlib import Path
 import yaml  # type: ignore
 import json
-from typing import TypedDict
+from typing import TypedDict, Union
 import time
 import re
+import glob
 
 # Add a custom TRACE level (below DEBUG) for very verbose diagnostics.
 TRACE_LEVEL_NUM = 9
@@ -53,84 +54,6 @@ def trace(msg, *args, **kws) -> None:
 
 
 logging.trace = trace  # type: ignore
-
-
-class Template:
-    """Represents a YAML template for CSV extraction from JSON.
-
-    This class manages template validation against a JSON schema and provides
-    the schema definition for valid templates.
-    """
-
-    structure = {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "csv4j template schema",
-        "description": "Schema for the YAML template used by csv4j (validate with jsonschema)",
-        "type": "object",
-        "properties": {
-            "tables": {"type": "array", "items": {"$ref": "#/definitions/table"}},
-            "pipes": {"type": "object", "items": {"$ref": "#/definitions/pipes"}},
-        },
-        "additionalProperties": False,
-        "definitions": {
-            "table": {
-                "type": "object",
-                "description": "A table extraction definition",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Human-readable table name",
-                    },
-                    "path": {
-                        # Allow either a string path or a null value so templates
-                        # can explicitly omit paths when appropriate.
-                        "type": ["string", "null"],
-                        "description": "JSON path (slash or // separated) to the array/object to extract",
-                    },
-                    "body": {
-                        "type": "object",
-                        "description": "Mapping of column keys to JSON paths (string)",
-                        "minProperties": 1,
-                        "additionalProperties": {"type": "string"},
-                    },
-                },
-                "required": ["body"],
-                "additionalProperties": False,
-            },
-            "pipes": {
-                "type": "object",
-                "description": "A pipe of the size of the entire table",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False,
-            },
-        },
-    }
-
-    def __init__(self, path: Path) -> None:
-        """Initialize Template with a YAML file path.
-
-        Args:
-            path (pathlib.Path): Path to the YAML template file.
-        """
-        # The template YAML file path that describes table extraction rules
-        self.path = path
-
-    def validate(self) -> None:
-        """Validate the YAML template against the schema.
-
-        Args:
-            None
-
-        Raises:
-            jsonschema.ValidationError: If the template does not conform to the schema.
-        """
-        from jsonschema import validate
-
-        # Validate the YAML template against the embedded JSON schema
-        schema = self.structure
-        tpl = yaml.safe_load(open(self.path, "r", encoding="utf-8"))
-        validate(instance=tpl, schema=schema)
 
 
 class Logger(logging.Logger):
@@ -260,9 +183,52 @@ class Csv4J:
     the output generation.
     """
 
-    def __init__(
-        self, input_path: Path, output_path: Path, template_path: Path, verbose: int = 0
-    ) -> None:
+    structure = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "csv4j template schema",
+        "description": "Schema for the YAML template used by csv4j (validate with jsonschema)",
+        "type": "object",
+        "properties": {
+            "tables": {"type": "array", "items": {"$ref": "#/definitions/table"}},
+            "pipes": {"type": "object", "items": {"$ref": "#/definitions/pipes"}},
+        },
+        "additionalProperties": False,
+        "definitions": {
+            "table": {
+                "type": "object",
+                "description": "A table extraction definition",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Human-readable table name",
+                    },
+                    "path": {
+                        # Allow either a string path or a null value so templates
+                        # can explicitly omit paths when appropriate.
+                        "type": ["string", "null"],
+                        "description": "JSON path (slash or // separated) to the array/object to extract",
+                    },
+                    "body": {
+                        "type": "object",
+                        "description": "Mapping of column keys to JSON paths (string)",
+                        "minProperties": 1,
+                        "additionalProperties": {"type": "string"},
+                    },
+                },
+                "required": ["body"],
+                "additionalProperties": False,
+            },
+            "pipes": {
+                "type": "object",
+                "description": "A pipe of the size of the entire table",
+                "properties": {},
+                "required": [],
+                "additionalProperties": False,
+            },
+        },
+    }
+
+    def __init__(self, verbose: int = 0) -> None:
         """Initialize Csv4J processor.
 
         Args:
@@ -275,52 +241,141 @@ class Csv4J:
         # initialize module logger with desired verbosity
         self.logger = Logger("csv4j", verbose=verbose)
         # normalize provided paths to Path objects
-        self.input_path = Path(input_path)
-        self.template_path = Path(template_path)
-        self.output_path = Path(output_path)
+
+        self.input: list[dict] = []
+        self.template: dict = {}
+        self._customization: dict = {
+            "sep": ",",
+            "multiline": False,
+        }
+        self.data: dict = {}
         # Validate that the input/template files exist and have expected ext
-        self.validate_paths()
 
-    def validate_paths(self) -> bool:
-        """Validate that input and template files exist with correct extensions.
+    def __template_is_valid(self, template: dict) -> bool:
+        from jsonschema import validate
 
+        # Validate the YAML template against the embedded JSON schema
+        schema = self.structure
+        tpl = template
+        validate(instance=tpl, schema=schema)
+        return True
+
+    def customize(self, sep: str, multiline: bool) -> bool:
+        """Customize CSV output settings.
         Args:
-            None
-
-        Returns:
-            bool: True if validation failed, False if all checks passed.
+            sep (str): CSV separator character (,;|).
+            multiline (bool): If True, list items are emitted as multiple lines.
         """
-        errors = 0
-        if not self.input_path.exists() or not self.input_path.is_file():
-            self.logger.error(
-                "input file '%s' does not exist or is not a file", self.input_path
-            )
-            errors += 1
-        if self.input_path.suffix.lower() != ".json":
-            self.logger.error(
-                "input file '%s' must have a .json extension", self.input_path
-            )
-            errors += 1
-        if not self.template_path.exists() or not self.template_path.is_file():
-            self.logger.error(
-                "template file '%s' does not exist or is not a file", self.template_path
-            )
-            errors += 1
-        if self.template_path.suffix.lower() != ".yaml":
-            self.logger.error(
-                "template file '%s' must have a .yaml extension", self.template_path
-            )
-            errors += 1
-
-        # Return True if there were validation errors (convenience for caller)
-        if errors > 0:
-            self.logger.error("validation failed with %d error(s), exiting", errors)
-            return True
-        else:
-            self.logger.debug("all input files validated successfully")
+        if multiline not in [True, False]:
+            self.logger.error("multiline must be a boolean value (True/False)")
             return False
 
-    def process(self, sep: str = ",", multiline: bool = False) -> None:
+        if sep not in [",", "|", ";"]:
+            self.logger.error("sep must be one of ',', '|', or ';'")
+            return False
+
+        self._customization["sep"] = sep
+        self._customization["multiline"] = multiline
+
+        return True
+
+    def load_template(self, path: Path, wildcard: bool = False) -> Union[dict, None]:
+        if wildcard:
+            matched_files = glob.glob(str(path))
+            if len(matched_files) == 0:
+                self.logger.error("no files matched the input pattern '%s'", path)
+                return None
+            elif len(matched_files) == 1:
+                path = Path(matched_files[0])
+            else:
+                self.logger.error(
+                    "multiple files matched the input pattern '%s'; please provide a single file",
+                    path,
+                )
+                return None
+
+        if not path.exists() or not path.is_file():
+            self.logger.error(
+                "template file '%s' does not exist or is not a file", path
+            )
+            return None
+
+        tmp = yaml.safe_load(path.read_text(encoding="utf-8"))
+        return self.loads_template(tmp)
+
+    def loads_template(self, input: dict) -> Union[dict, None]:
+        if self.__template_is_valid(input):
+            self.logger.debug("template YAML loaded and validated successfully")
+            self.template = input
+            return self.template
+        else:
+            return None
+
+    def load_input(self, path: Path, wildcard: bool = False) -> Union[dict, None]:
+        if wildcard:
+            matched_files = glob.glob(str(path))
+            if len(matched_files) == 0:
+                self.logger.error("no files matched the input pattern '%s'", path)
+                return None
+            elif len(matched_files) == 1:
+                path = Path(matched_files[0])
+            else:
+                self.logger.error(
+                    "multiple files matched the input pattern '%s'; please provide a single file",
+                    path,
+                )
+                return None
+
+        if not path.exists() or not path.is_file():
+            self.logger.error("input file '%s' does not exist or is not a file", path)
+            return None
+
+        with open(path, "r", encoding="utf-8") as f:
+            in_stream = json.load(f)
+        return self.loads_input(in_stream, path.stem)
+
+    def loads_input(self, input: dict, id: str) -> Union[dict, None]:
+        in_stream = input
+        if type(in_stream) is dict:
+            self.logger.trace(  # type: ignore[attr-defined]
+                f"input JSON loaded successfully as dictionary with {len(in_stream)} top-level keys"
+            )
+        elif type(in_stream) is list:
+            in_stream = {".": in_stream}
+            self.logger.trace(  # type: ignore[attr-defined]
+                f"input JSON loaded successfully as list with {len(in_stream)} top-level entries"
+            )
+        else:
+            self.logger.error("warning: input JSON is neither an object nor an array")
+            return None
+
+        self.input.append({id: in_stream})
+        self.__consolidate_inputs()
+        return in_stream
+
+    def __consolidate_inputs(self) -> None:
+        if len(self.input) > 1:
+            for i in self.input:
+                for k, v in i.items():
+                    self.data[k] = v
+        else:
+            tmp = self.input[0]
+            self.data = tmp[list(tmp.keys())[0]]
+
+    def writecsv(self, path: Path) -> str:
+        with open(path, "w", encoding="utf-8") as out_stream:
+            payload = self.getcsv()
+            out_stream.write(payload)
+            out_stream.close()
+            self.logger.info(f"output written to '{path}'")
+        return payload
+
+    def getcsv(self) -> str:
+        return self.__process(
+            sep=self._customization["sep"], multiline=self._customization["multiline"]
+        )
+
+    def __process(self, sep: str = ",", multiline: bool = False) -> str:
         """Process JSON input using the template and write CSV output.
 
         Args:
@@ -330,37 +385,14 @@ class Csv4J:
         """
         start = time.perf_counter()
 
-        # Load JSON input
-        with open(self.input_path, "r", encoding="utf-8") as f:
-            in_stream = json.load(f)
-            if type(in_stream) is dict:
-                self.logger.trace(  # type: ignore[attr-defined]
-                    f"input JSON loaded successfully as dictionary with {len(in_stream)} top-level keys"
-                )
-            elif type(in_stream) is list:
-                in_stream = {".": in_stream}
-                self.logger.trace(  # type: ignore[attr-defined]
-                    f"input JSON loaded successfully as list with {len(in_stream)} top-level entries"
-                )
-            else:
-                self.logger.error(
-                    "warning: input JSON is neither an object nor an array"
-                )
-
-        # Open output stream for writing text CSV-like payload
-        out_stream = open(self.output_path, "w", encoding="utf-8")
-
-        # Load the YAML template that defines tables and column mappings
-        template = yaml.safe_load(self.template_path.read_text(encoding="utf-8"))
-
         # Accumulate per-table intermediate payloads and track max dimensions
         table_payload = []  # type: ignore[var-annotated]
         max_rows = -1
         max_cols = -1
 
-        for table in template.get("tables", []):
+        for table in self.template.get("tables", []):
             # Start blob at root of the JSON input copy so we can drill down
-            blob = {**in_stream}
+            blob = {**self.data}  # type: ignore[index]
 
             boilerplate: Boilerplate = {
                 "name": table.get("name", "<unnamed>"),
@@ -386,18 +418,16 @@ class Csv4J:
                 self.__recursive_process_path(blob, path) if path else [blob]
             )
             # print(f"final blob: {blob}")
-            for blob in recursive_results:
-                if blob is None:
-                    # Missing path — skip this table and warn user
-                    self.logger.warning(
-                        f"warning: path '{path}' not found in input JSON"
-                    )
-                    continue
-                else:
-                    boilerplate = self.__boilerplate_merge(
-                        table_payload, boilerplate, table
-                    )
-                    self.__process_table(boilerplate=boilerplate, blob=blob, body=body, sep=sep, multiline=multiline)  # type: ignore[union-attr]
+            # for blob in recursive_results:
+            #     if blob is None:
+            #         # Missing path — skip this table and warn user
+            #         self.logger.warning(
+            #             f"warning: path '{path}' not found in input JSON"
+            #         )
+            #         continue
+            # else:
+            boilerplate = self.__boilerplate_merge(table_payload, boilerplate, table)
+            self.__process_table(boilerplate=boilerplate, blob=recursive_results, body=body, sep=sep, multiline=multiline)  # type: ignore[union-attr]
 
             max_cols = max(max_cols, boilerplate["ncols"])  # type: ignore[assignment]
             max_rows = max(max_rows, boilerplate["nrows"])  # type: ignore[assignment]
@@ -408,11 +438,11 @@ class Csv4J:
 
         self.logger.debug(f"max rows: {max_rows}, max cols: {max_cols}")
 
-        if len(template.get("pipes", {})) > 0:
+        if len(self.template.get("pipes", {})) > 0:
             self.logger.info("starting pipes processing")
-            for pipe_k, pipe_v in template.get("pipes", {}).items():
+            for pipe_k, pipe_v in self.template.get("pipes", {}).items():
                 self.logger.info(f"processing pipe: {pipe_k}")
-                dump = set(self.__recursive_process_path(in_stream, pipe_v))
+                dump = set(self.__recursive_process_path(blob, pipe_v))
                 if len(dump) == 1:
                     pass
                 elif len(dump) > 1:
@@ -440,14 +470,13 @@ class Csv4J:
         # is preserved to maintain a predictable shape in the dump output.
         payload = self.__merge_out_tables(table_payload, max_rows, sep)
 
-        out_stream.write(payload)
-        out_stream.close()
-        self.logger.info(f"output written to '{self.output_path}'")
         # code to measure
         end = time.perf_counter()
 
         elapsed = end - start
         self.logger.info(f"csv4j processing completed in {elapsed:.4f} seconds")
+
+        return payload
 
     def __recursive_process_path(self, blob, path, wildcard={}):
         """Recursively process a JSON path with wildcard support.
@@ -460,21 +489,25 @@ class Csv4J:
         Returns:
             list[dict]: List of processed blob dictionaries.
         """
+
+        def is_nested(d):
+            """Check if any value in the dictionary is itself a dictionary"""
+            return any(isinstance(v, dict) for v in d.values())
+
         # Recursively process a path within a blob
         payload = []
         self.logger.trace(
-            f"\nresursive at start: {blob}, path: {path}, wildcard: {wildcard}"
+            f"resursive at start: {blob}, path: {path}, wildcard: {wildcard}"
         )
         for step in path.split("//"):
             self.logger.trace(
-                f"\nresursive at step: {blob}, path: {path}, wildcard: {wildcard}"
+                f"resursive at step: {blob}, path: {path}, wildcard: {wildcard}"
             )
             path = "//".join(path.split("//")[1:])
             if step in blob:
                 blob = blob[step]
             elif step == "*":
                 # Wildcard step: capture all values at this level as a list
-                # blob = list(blob.values())
                 for k, b in blob.items():
                     # wildcard[f"${len(wildcard.keys())}$"] = k
                     payload += self.__recursive_process_path(
@@ -488,13 +521,30 @@ class Csv4J:
                 blob = None
                 continue
 
-        if type(blob) is dict:
-            # print(blob)
-            for b in [x for x in blob.values() if type(x) is dict]:
-                b.update(wildcard)
-
+        # Append the final blob if not None
         if blob is not None:
-            payload.append(blob)
+            if type(blob) is dict:
+                # payload.append(blob)
+                for k, v in blob.items():
+                    payload.append({k: v})
+            elif type(blob) is list:
+                for b in blob:
+                    payload.append(b)
+            else:
+                payload.append(blob)
+
+        print(f"payload before wildcard injection: {payload}")
+        for p in payload:
+            print(p)
+            for k, v in wildcard.items():
+                if type(p) is dict:
+                    if not is_nested(p):
+                        p[k] = v
+                    elif is_nested(p) and len(p.keys()) == 1:
+                        # unwrap single-key nested dicts
+                        head = list(p.keys())[0]
+                        if type(p[head]) is dict:
+                            p[head][k] = v
 
         self.logger.trace(  # type: ignore[attr-defined]
             f"recursive_process_path returning payload {payload} entries"
@@ -644,33 +694,43 @@ class Csv4J:
             multiline (bool): Whether to emit list items as multiple lines.
             wildcard_keys (list): List of wildcard capture keys (default: []).
         """
+
+        def is_nested(d):
+            """Check if any value in the dictionary is itself a dictionary"""
+            return any(isinstance(v, dict) for v in d.values())
+
         # Each element in blob is expected to be an entry we can map
         for b in blob:
             self.logger.trace(f"processing blob entry: {b}")  # type: ignore[attr-defined]
             payload_row: list[str] = []
             for entry_key, entry_path in body.items():
                 finished = False
-
-                if type(blob) is list:
-                    entries = b
+                if (
+                    type(b) is not list and type(b) is not dict
+                ):  # only for list entry with no key
                     if entry_path == "$|$":
                         # for value in entries:
                         boilerplate["rows"].append(
                             self.__cleanup_protect_boilerplate(
-                                [entries], sep=sep, multiline=multiline
+                                [b], sep=sep, multiline=multiline
                             )
                         )  # type: ignore[union-attr]
                         continue
-                elif type(blob) is dict:
-                    entries = blob[b]
-                    if entry_path == "$head$":
-                        payload_row.append(b)
-                        continue
-                    elif entry_path == "$value$":
-                        payload_row.append(blob.get(b, "NULL"))
-                        continue
+                elif type(b) is dict:
+                    if (not is_nested(b) and len(b.keys()) == 1) or (
+                        is_nested(b) and len(b.keys()) == 1
+                    ):
+                        # unwrap single-key nested dicts
+                        head = list(b.keys())[0]
+                        if entry_path == "$head$":
+                            payload_row.append(head)
+                            continue
+                        elif entry_path == "$value$":
+                            payload_row.append(b.get(head, "NULL"))
+                            continue
+                        entries = b.get(head, {})
                     else:
-                        pass
+                        entries = b
                 else:
                     payload_row = ["NULL"] * len(body.items())
                     continue
@@ -688,8 +748,8 @@ class Csv4J:
                             0
                         ]
                         entries = entries.get(matched_key, {})
-                    elif step == "$0$":
-                        entries = wildcard_keys
+                    # elif step == "$0$":
+                    #     entries = wildcard_keys
                     else:
                         entries = None
                         break
@@ -701,9 +761,9 @@ class Csv4J:
                     self.logger.warning(
                         f"warning: path '{entry_path}' not found in input JSON"
                     )
-                    continue
-                else:
-                    payload_row.append(entries)
+                    entries = ""
+
+                payload_row.append(entries)
 
             if len(payload_row) > 0:
                 boilerplate["rows"].append(self.__cleanup_protect_boilerplate(payload_row, sep=sep, multiline=multiline))  # type: ignore[union-attr]
@@ -725,10 +785,22 @@ def main(args=None):
     # Allow passing a parsed args object for easier testing; otherwise parse
     # from the command-line.
     args = parse_args()
-    Template(args.template).validate()
-    csv4j = Csv4J(args.input, args.output, args.template, args.verbose)
+    c4j = Csv4J(args.verbose)
     # Pass the separator and multiline flag into processing
-    csv4j.process(args.sep, args.multiline)
+    c4j.customize(args.sep, args.multiline)
+    # Load template
+    tpl = c4j.load_template(args.template)
+    if tpl is None:
+        return 1
+    # Load input JSON
+    inp = c4j.load_input(args.input)
+    if inp is None:
+        return 2
+    # Write output CSV
+    dump = c4j.writecsv(args.output)
+    if dump is None:
+        return 3
+    print("here")
     return 0
 
 

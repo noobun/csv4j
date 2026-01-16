@@ -1,0 +1,169 @@
+{
+    "catalog": {
+        "classes": {
+            "III": {
+                "childs": {
+                    "A. B.": {
+                        "math": 5,
+                        "english": 8,
+                        "science": 7,
+                        "misses": [
+                            "21-10-2024",
+                            "1-9-2025"
+                        ],
+                        "identification": {
+                            "sex": "f"
+                        }
+                    },
+                    "C. D.": {
+                        "math": 9,
+                        "english": 6,
+                        "science": 8,
+                        "misses": [
+                            "15-11-2024",
+                            "3-12-2024"
+                        ],
+                        "identification": {
+                            "sex": "m"
+                        }
+                    },
+                    "E. F.": {
+                        "math": 7,
+                        "english": 9,
+                        "science": 6,
+                        "misses": [
+                            "8-10-2024"
+                        ],
+                        "identification": {
+                            "sex": "f"
+                        }
+                    }
+                }
+            },
+            "IV": {
+                "childs": {
+                    "G. H.": {
+                        "math": 8,
+                        "english": 7,
+                        "science": 9,
+                        "misses": [],
+                        "identification": {
+                            "sex": "f"
+                        }
+                    },
+                    "I. J.": {
+                        "math": 6,
+                        "english": 8,
+                        "science": 7,
+                        "identification": {
+                            "sex": "m"
+                        }
+                    }
+                }
+            },
+            "VII": {
+                "childs": {
+                    "K. L.": {
+                        "math": 9,
+                        "english": 9,
+                        "misses": [
+                            "9-10-2024",
+                            "18-11-2024"
+                        ],
+                        "science": 8,
+                        "identification": {
+                            "sex": "f"
+                        }
+                    },
+                    "M. N.": {
+                        "math": 7,
+                        "english": 6,
+                        "science": 9,
+                        "identification": {
+                            "sex": "f"
+                        }
+                    },
+                    "O. P.": {
+                        "misses": [
+                            "25-11-2024",
+                            "2-12-2024",
+                            "16-12-2024"
+                        ],
+                        "math": 8,
+                        "english": 8,
+                        "science": 7,
+                        "identification": {
+                            "sex": "m"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "history": {
+        "10.10.2025": {
+            "classes": {
+                "III": {
+                    "Prof 1": {
+                        "lessons": [
+                            "Lectie III1",
+                            "Lectie III2"
+                        ]
+                    },
+                    "Prof 2": {
+                        "lessons": [
+                            "Lectie III1",
+                            "Lectie III2"
+                        ]
+                    }
+                },
+                "IV": {
+                    "Prof 1": {
+                        "lessons": [
+                            "Lectie III1",
+                            "Lectie III2"
+                        ]
+                    },
+                    "Prof 2": {
+                        "lessons": [
+                            "Lectie III1",
+                            "Lectie III2"
+                        ]
+                    }
+                }
+            }
+        },
+        "10.10.2027": {
+            "classes": {
+                "III": {
+                    "Prof 1": {
+                        "lessons": [
+                            "Lectie III3",
+                            "Lectie III4"
+                        ]
+                    },
+                    "Prof 2": {
+                        "lessons": [
+                            "Lectie III3",
+                            "Lectie III4"
+                        ]
+                    }
+                },
+                "IV": {
+                    "Prof 1": {
+                        "lessons": [
+                            "Lectie IV3",
+                            "Lectie IV4"
+                        ]
+                    },
+                    "Prof 2": {
+                        "lessons": [
+                            "Lectie IV3",
+                            "Lectie IV4"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

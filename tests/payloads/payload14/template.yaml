@@ -1,0 +1,11 @@
+# Template for test 13
+tables:
+  - path: catalog//childs
+    name: "childs db"
+    body:
+      name: $head$
+      note.math: math
+      note.english: english
+      note.science: science
+      misses: misses
+      sex: identification//sex
