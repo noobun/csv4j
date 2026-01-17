@@ -165,6 +165,15 @@ def parse_args(argv=None):
         action="store_true",
         required=False,
     )
+    parser.add_argument(
+        "-n",
+        "--none",
+        help="String to use when a JSON path is not found (default: empty string)",
+        metavar="NONE",
+        default="",
+        required=False,
+        type=str,
+    )
     return parser.parse_args(argv)
 
 
@@ -247,11 +256,20 @@ class Csv4J:
         self._customization: dict = {
             "sep": ",",
             "multiline": False,
+            "none": "",
         }
         self.data: dict = {}
         # Validate that the input/template files exist and have expected ext
 
     def __template_is_valid(self, template: dict) -> bool:
+        """Validate a template dict against the embedded JSON schema.
+
+        Args:
+            template (dict): The parsed YAML template as a dictionary.
+
+        Returns:
+            bool: True when template is valid; raises from jsonschema.validate on failure.
+        """
         from jsonschema import validate
 
         # Validate the YAML template against the embedded JSON schema
@@ -260,11 +278,14 @@ class Csv4J:
         validate(instance=tpl, schema=schema)
         return True
 
-    def customize(self, sep: str, multiline: bool) -> bool:
+    def customize(self, sep: str, multiline: bool, none: str = "") -> bool:
         """Customize CSV output settings.
+
         Args:
             sep (str): CSV separator character (,;|).
             multiline (bool): If True, list items are emitted as multiple lines.
+            none (str): Value to use when a JSON path is not found. When
+                omitted the current customization value is unchanged.
         """
         if multiline not in [True, False]:
             self.logger.error("multiline must be a boolean value (True/False)")
@@ -274,12 +295,27 @@ class Csv4J:
             self.logger.error("sep must be one of ',', '|', or ';'")
             return False
 
+        if type(none) is not str:
+            self.logger.error("none value must be a string")
+            return False
+
         self._customization["sep"] = sep
         self._customization["multiline"] = multiline
+        self._customization["none"] = none
 
         return True
 
     def load_template(self, path: Path, wildcard: bool = False) -> Union[dict, None]:
+        """Load a YAML template from `path` and validate it.
+
+        Args:
+            path (Path): Path to a YAML template file (or glob when `wildcard` True).
+            wildcard (bool): If True, treat `path` as a glob and allow a single match.
+
+        Returns:
+            dict | None: The loaded template dict on success, otherwise None.
+        """
+
         if wildcard:
             matched_files = glob.glob(str(path))
             if len(matched_files) == 0:
@@ -304,6 +340,14 @@ class Csv4J:
         return self.loads_template(tmp)
 
     def loads_template(self, input: dict) -> Union[dict, None]:
+        """Load and validate a template provided as a dictionary.
+
+        Args:
+            input (dict): Parsed YAML template as a dict.
+
+        Returns:
+            dict | None: The stored template dict on success, otherwise None.
+        """
         if self.__template_is_valid(input):
             self.logger.debug("template YAML loaded and validated successfully")
             self.template = input
@@ -312,6 +356,16 @@ class Csv4J:
             return None
 
     def load_input(self, path: Path, wildcard: bool = False) -> Union[dict, None]:
+        """Load a JSON input file from `path` (supports globbing when `wildcard` True).
+
+        Args:
+            path (Path): Path (or glob) to the input JSON file.
+            wildcard (bool): If True, treat `path` as a glob and allow a single match.
+
+        Returns:
+            dict | None: The parsed JSON object on success, otherwise None.
+        """
+
         if wildcard:
             matched_files = glob.glob(str(path))
             if len(matched_files) == 0:
@@ -354,6 +408,12 @@ class Csv4J:
         return in_stream
 
     def __consolidate_inputs(self) -> None:
+        """Consolidate multiple loaded inputs into the internal `data` structure.
+
+        If multiple inputs were loaded they are merged under their ids, otherwise
+        the single input is promoted to `self.data` for processing.
+        """
+
         if len(self.input) > 1:
             for i in self.input:
                 for k, v in i.items():
@@ -363,6 +423,14 @@ class Csv4J:
             self.data = tmp[list(tmp.keys())[0]]
 
     def writecsv(self, path: Path) -> str:
+        """Write the generated CSV payload to `path` and return the payload.
+
+        Args:
+            path (Path): Destination path for the CSV output.
+
+        Returns:
+            str: The CSV payload that was written.
+        """
         with open(path, "w", encoding="utf-8") as out_stream:
             payload = self.getcsv()
             out_stream.write(payload)
@@ -371,11 +439,18 @@ class Csv4J:
         return payload
 
     def getcsv(self) -> str:
+        """Return the generated CSV payload as a string using current customization.
+
+        Returns:
+            str: The CSV payload.
+        """
         return self.__process(
-            sep=self._customization["sep"], multiline=self._customization["multiline"]
+            sep=self._customization["sep"],
+            multiline=self._customization["multiline"],
+            none=self._customization["none"],
         )
 
-    def __process(self, sep: str = ",", multiline: bool = False) -> str:
+    def __process(self, sep: str = ",", multiline: bool = False, none: str = "") -> str:
         """Process JSON input using the template and write CSV output.
 
         Args:
@@ -427,7 +502,14 @@ class Csv4J:
             #         continue
             # else:
             boilerplate = self.__boilerplate_merge(table_payload, boilerplate, table)
-            self.__process_table(boilerplate=boilerplate, blob=recursive_results, body=body, sep=sep, multiline=multiline)  # type: ignore[union-attr]
+            self.__process_table(
+                boilerplate=boilerplate,
+                blob=recursive_results,
+                body=body,
+                sep=sep,
+                multiline=multiline,
+                none=none,
+            )  # type: ignore[union-attr]
 
             max_cols = max(max_cols, boilerplate["ncols"])  # type: ignore[assignment]
             max_rows = max(max_rows, boilerplate["nrows"])  # type: ignore[assignment]
@@ -507,12 +589,20 @@ class Csv4J:
             if step in blob:
                 blob = blob[step]
             elif step == "*":
-                # Wildcard step: capture all values at this level as a list
-                for k, b in blob.items():
-                    # wildcard[f"${len(wildcard.keys())}$"] = k
-                    payload += self.__recursive_process_path(
-                        b, path, {**wildcard, f"${len(wildcard.keys())}$": k}
-                    )
+                if type(blob) is list:
+                    for item in blob:
+                        payload += self.__recursive_process_path(
+                            item, path, {**wildcard}
+                        )
+                elif type(blob) is dict:
+                    # Wildcard step: capture all values at this level as a list
+                    for k, b in blob.items():
+                        # wildcard[f"${len(wildcard.keys())}$"] = k
+                        payload += self.__recursive_process_path(
+                            b, path, {**wildcard, f"${len(wildcard.keys())}$": k}
+                        )
+                else:
+                    pass
                 blob = None
                 break
             elif step == "" or step is None:
@@ -533,9 +623,7 @@ class Csv4J:
             else:
                 payload.append(blob)
 
-        print(f"payload before wildcard injection: {payload}")
         for p in payload:
-            print(p)
             for k, v in wildcard.items():
                 if type(p) is dict:
                     if not is_nested(p):
@@ -637,6 +725,16 @@ class Csv4J:
         return incoming
 
     def __cleanup_protect_boilerplate(self, payload_row: list, sep, multiline) -> list:
+        """Cleanup and coerce a row payload to safe CSV-friendly strings.
+
+        Args:
+            payload_row (list): List of raw cell values.
+            sep (str): The CSV separator to avoid in output.
+            multiline (bool): Whether multiline formatting is active.
+
+        Returns:
+            list: The cleaned/serialized row values.
+        """
         # Cleanup rows
         for index in range(len(payload_row)):
             # Lists: support two behaviors controlled by the `multiline` flag.
@@ -682,7 +780,7 @@ class Csv4J:
         return payload_row
 
     def __process_table(
-        self, boilerplate, blob, body, sep, multiline, wildcard_keys=[]
+        self, boilerplate, blob, body, sep, multiline, none, wildcard_keys=[]
     ) -> None:
         """Process a single table by extracting and formatting cell values.
 
@@ -757,11 +855,11 @@ class Csv4J:
                     finished = True
 
                 if entries is None and not finished:
-                    # Missing sub-path — log and skip the cell
+                    # Missing sub-path — log and substitute the configured NONE
                     self.logger.warning(
                         f"warning: path '{entry_path}' not found in input JSON"
                     )
-                    entries = ""
+                    entries = none
 
                 payload_row.append(entries)
 
@@ -786,8 +884,8 @@ def main(args=None):
     # from the command-line.
     args = parse_args()
     c4j = Csv4J(args.verbose)
-    # Pass the separator and multiline flag into processing
-    c4j.customize(args.sep, args.multiline)
+    # Pass the separator, multiline flag and missing-value token into processing
+    c4j.customize(args.sep, args.multiline, args.none)
     # Load template
     tpl = c4j.load_template(args.template)
     if tpl is None:

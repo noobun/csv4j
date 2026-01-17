@@ -1,0 +1,9 @@
+# Template for test 13
+tables:
+  - path: .//*//products
+    name: "carts"
+    body:
+      id: id
+      title: title
+      price: price
+      quantity: quantity
