@@ -1,0 +1,14 @@
+# Template for test 1
+tables:
+  - path: ram//devices
+    name: "cpu"
+    body:
+      ram.name: name
+      ram.total: total
+      ram.used: used
+  - path: catalog//classes//*//childs//*
+    name: "catalog db"
+    body:
+      class: $0$
+      name: $1$
+      science: science

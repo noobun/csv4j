@@ -27,6 +27,7 @@ def load_test_cases():
 
 
 def files_are_equal(file1: Path, file2: Path) -> bool:
+    """Return True when two files have identical bytes."""
     return file1.read_bytes() == file2.read_bytes()
 
 
@@ -36,6 +37,7 @@ def files_are_equal(file1: Path, file2: Path) -> bool:
     ids=lambda p: p.name,  # test names: test1, test2, ...
 )
 def test_payload_positive(case_dir):
+    """Run payload extraction end-to-end and compare produced CSV to expected."""
     c = Csv4J(1)
     assert type(c) is Csv4J
     c.load_input(Path(case_dir / "in.json"))
@@ -52,6 +54,7 @@ def test_payload_positive(case_dir):
     ids=lambda p: p.name,  # test names: test1, test2, ...
 )
 def test_payload_positive_manualfeed(case_dir):
+    """Feed input/template as Python objects, then write and compare output."""
     c = Csv4J(1)
     assert type(c) is Csv4J
 
@@ -75,12 +78,13 @@ def test_payload_positive_manualfeed(case_dir):
     ids=lambda p: p.name,  # test names: test1, test2, ...
 )
 def test_payload_positive_multiline(case_dir):
+    """Validate multiline output mode produces expected CSV."""
     c = Csv4J(1)
     assert type(c) is Csv4J
     c.load_input(Path(case_dir / "in.json"))
     c.load_template(Path(case_dir / "template.yaml"))
     c.writecsv("dump/" + case_dir.name + ".csv")
-    c.customize(sep=",", multiline=True)
+    c.customize(sep=",", multiline=True, none="")
     c.writecsv("dump/" + case_dir.name + "_multiline.csv")
     assert os.path.exists(f"dump/{case_dir.name}_multiline.csv") is True
     assert files_are_equal(Path(f"dump/{case_dir.name}_multiline.csv"), case_dir / "out_multiline.csv")
@@ -92,13 +96,14 @@ def test_payload_positive_multiline(case_dir):
     ids=lambda p: p.name,  # test names: test1, test2, ...
 )
 def test_payload_positive_custom_sep(case_dir):
+    """Validate custom separators produce expected CSV outputs."""
     sep = [",", ";", "|"]
     c = Csv4J(1)
     assert type(c) is Csv4J
     c.load_input(Path(case_dir / "in.json"))
     c.load_template(Path(case_dir / "template.yaml"))
     for index in range(len(sep)):
-        c.customize(sep=sep[index], multiline=False)
+        c.customize(sep=sep[index], multiline=False, none="")
         c.writecsv(f"dump/{case_dir.name}_sep.csv")
         assert os.path.exists(f"dump/{case_dir.name}_sep.csv") is True
         assert files_are_equal(Path(f"dump/{case_dir.name}_sep.csv"), Path(f"{case_dir}/out_sep_{index}.csv"))

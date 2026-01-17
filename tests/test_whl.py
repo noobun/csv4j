@@ -18,6 +18,7 @@ def load_test_cases():
 
 
 def files_are_equal(file1: Path, file2: Path) -> bool:
+    """Return True when two files have identical bytes."""
     return file1.read_bytes() == file2.read_bytes()
 
 
@@ -27,6 +28,7 @@ def files_are_equal(file1: Path, file2: Path) -> bool:
     ids=lambda p: p.name,  # test names: test1, test2, ...
 )
 def test_payload_positive(case_dir):
+    """Run payload test using installed package-like import and compare output."""
     c = Csv4J(1)
     assert type(c) is Csv4J
     c.load_input(Path(case_dir / "in.json"))

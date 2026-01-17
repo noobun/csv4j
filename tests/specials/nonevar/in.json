@@ -1,0 +1,127 @@
+{
+    "ram": {
+        "devices": [
+            {
+                "total": 2048,
+                "used": 1024
+            },
+            {
+                "name": "r2",
+                "used": 1
+            },
+            {
+                "name": "r3",
+                "total": 2048
+            },
+            {
+                "total": 2048,
+                "used": 2048
+            },
+            {
+                "name": "r5",
+                "total": 2048
+            },
+            {
+                "name": "r6",
+                "used": 16
+            }
+        ]
+    },
+    "catalog": {
+        "classes": {
+            "III": {
+                "childs": {
+                    "A. B.": {
+                        "math": 5,
+                        "english": 8,
+                        "science": 7,
+                        "misses": [
+                            "21-10-2024",
+                            "1-9-2025"
+                        ]
+                    },
+                    "C. D.": {
+                        "math": 9,
+                        "english": 6,
+                        "misses": [
+                            "15-11-2024",
+                            "3-12-2024"
+                        ],
+                        "identification": {
+                            "sex": "m"
+                        }
+                    },
+                    "E. F.": {
+                        "math": 7,
+                        "english": 9,
+                        "science": 6,
+                        "misses": [
+                            "8-10-2024"
+                        ],
+                        "identification": {
+                            "sex": "f"
+                        }
+                    }
+                }
+            },
+            "IV": {
+                "childs": {
+                    "G. H.": {
+                        "math": 8,
+                        "english": 7,
+                        "science": 9,
+                        "misses": [],
+                        "identification": {
+                            "sex": "f"
+                        }
+                    },
+                    "I. J.": {
+                        "math": 6,
+                        "english": 8,
+                        "science": 7,
+                        "identification": {
+                            "sex": "m"
+                        }
+                    }
+                }
+            },
+            "VII": {
+                "childs": {
+                    "K. L.": {
+                        "math": 9,
+                        "english": 9,
+                        "misses": [
+                            "9-10-2024",
+                            "18-11-2024"
+                        ],
+                        "science": 8,
+                        "identification": {
+                            "sex": "f"
+                        }
+                    },
+                    "M. N.": {
+                        "math": 7,
+                        "english": 6,
+                        "science": 9,
+                        "identification": {
+                            "sex": "f"
+                        }
+                    },
+                    "O. P.": {
+                        "misses": [
+                            "25-11-2024",
+                            "2-12-2024",
+                            "16-12-2024"
+                        ],
+                        "math": 8,
+                        "english": 8,
+                        "science": 7,
+                        "identification": {
+                            "sex": "m"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

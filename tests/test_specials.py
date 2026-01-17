@@ -14,13 +14,16 @@ from csv4j import Csv4J  # noqa: E402
 SPECIALS_DIR = Path(__file__).parent / "specials"
 REGEX_TC = SPECIALS_DIR / "regex"
 MULTIINPUT_TC = SPECIALS_DIR / "multiinput"
+NULLKEY_TC = SPECIALS_DIR / "nonevar"
 
 
 def files_are_equal(file1: Path, file2: Path) -> bool:
+    """Return True when two files have identical bytes."""
     return file1.read_bytes() == file2.read_bytes()
 
 
 def test_payload_wildcard_positive():
+    """Test wildcard loading of inputs/templates and compare output."""
     c = Csv4J(1)
     assert type(c) is Csv4J
     c.load_input(Path(REGEX_TC / "*.json"), wildcard=True)
@@ -32,6 +35,7 @@ def test_payload_wildcard_positive():
 
 
 def test_payload_wildcard_negative():
+    """Ensure wildcard without match returns NoneType (error path)."""
     c = Csv4J(1)
     assert type(c) is Csv4J
     assert type(c.load_input(Path(REGEX_TC / "*.json"))) is NoneType
@@ -39,6 +43,7 @@ def test_payload_wildcard_negative():
 
 
 def test_payload_multiinput_positive():
+    """Load multiple inputs and ensure merged output matches expected."""
     c = Csv4J(1)
     assert type(c) is Csv4J
     c.load_input(Path(MULTIINPUT_TC / "in1.json"))
@@ -49,3 +54,18 @@ def test_payload_multiinput_positive():
 
     assert os.path.exists("dump/multiinput.csv") is True
     assert files_are_equal(Path("dump/multiinput.csv"), Path(MULTIINPUT_TC / "out.csv"))
+
+
+def test_payload_nullkey_positive():
+    """Load multiple inputs and ensure merged output matches expected."""
+    c = Csv4J(1)
+    assert type(c) is Csv4J
+    c.load_input(Path(NULLKEY_TC / "in.json"))
+    c.load_template(Path(NULLKEY_TC / "template.yaml"))
+
+    for null_val in ["NA", "NULL"]:
+        c.customize(sep=",", multiline=False, none=null_val)
+        c.writecsv(f"dump/nullvalue_{null_val}.csv")
+
+        assert os.path.exists(f"dump/nullvalue_{null_val}.csv") is True
+        assert files_are_equal(Path(f"dump/nullvalue_{null_val}.csv"), Path(NULLKEY_TC / f"out_{null_val}.csv"))
