@@ -241,9 +241,6 @@ class Csv4J:
         """Initialize Csv4J processor.
 
         Args:
-            input_path (pathlib.Path): Path to the input JSON file.
-            output_path (pathlib.Path): Path to the output CSV file.
-            template_path (pathlib.Path): Path to the YAML template file.
             verbose (int): Verbosity level for logging (default: 0).
         """
         print("csv4j - lightweight CSV from json tool")
@@ -413,7 +410,7 @@ class Csv4J:
         If multiple inputs were loaded they are merged under their ids, otherwise
         the single input is promoted to `self.data` for processing.
         """
-
+        self.data = {}
         if len(self.input) > 1:
             for i in self.input:
                 for k, v in i.items():
