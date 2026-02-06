@@ -27,30 +27,33 @@ python3 src/csv4j.py -i <input.json> -t <template.yaml> -o <output.csv>
 ```
 
 - Argumente:
-  - `-i, --input`: fișierul JSON de intrare (obligatoriu)
+  - `-i, --input`: fișierul JSON de intrare (unul sau mai multe căi separate prin spațiu) (obligatoriu)
   - `-o, --output`: fișierul CSV de ieșire (obligatoriu)
+  - `-c, --carry`: copiază fișierul/fișierele de intrare în directorul părinte al fișierului de ieșire atunci când este setat (opțional)
   - `-t, --template`: fișierul YAML cu șablonul (obligatoriu)
   - `-s, --sep`: caracterul separator CSV (opțional; unul dintre `,`, `|`, `;`; implicit: `,`)
   - `-ml, --multiline`: Emite celulele de tip listă pe mai multe linii; altfel listele sunt unite inline (opțional; implicit: dezactivat)
   - `-n, --none`: șir folosit când o cale JSON nu este găsită (opțional; implicit: șir gol)
 
 - Verbositate:
-  - fără `-v`: stdout afișează INFO și niveluri superioare; jurnalul (`csv4j.log`) capturează DEBUG.
-  - `-v`: stdout afișează DEBUG și niveluri superioare; jurnalul capturează TRACE.
-  - `-vv`: stdout afișează TRACE și jurnalul capturează TRACE.
+ - Verbositate (doar consolă):
+  - fără `-v`: stdout afișează INFO și niveluri superioare.
+  - `-v`: stdout afișează DEBUG și niveluri superioare.
+  - `-v` sau mai mult: stdout afișează DEBUG și niveluri superioare.
 
 Exemple:
 
 ```
 python3 src/csv4j.py -i tests/products.json -t tests/template.yaml -o products.csv
-python3 src/csv4j.py -i tests/products.json -t tests/template.yaml -o products.csv -v
+python3 src/csv4j.py -i tests/a.json tests/b.json -t tests/template.yaml -o products.csv -v
+python3 src/csv4j.py -i tests/products.json -t tests/template.yaml -o products.csv -c
 ```
 
 ## Implementare (la nivel înalt)
 - CLI-ul este implementat în `src/csv4j.py`.
 - Un șablon YAML specifică tabelele de extras: fiecare tabel are o `path` în JSON și un `body` care mapează cheile coloanelor la căi JSON.
 - Instrumentul construiește un `table_payload` cu `header` și `rows` pentru fiecare tabel, normalizează headerele și rândurile pentru o ordine deterministă și poate emite o matrice în format CSV pentru fiecare tabel.
-- Logging: mesajele sunt scrise în `csv4j.log`; ieșirea pe consolă este controlată prin flag-urile de verbositate. Este implementat un nivel TRACE personalizat pentru truze de depanare detaliate.
+- Ieșirea pe consolă este controlată prin flag-urile de verbositate; instrumentul nu scrie un jurnal în fișier.
 
 ## Comportament la unire a tabelelor
 
@@ -234,8 +237,14 @@ from csv4j import Csv4J
 # Crează procesorul (verbose este opțional)
 c = Csv4J(verbose=1)
 
-# Opțional: setează separatorul CSV și comportamentul multiline
+# Opțional: setează separatorul CSV și comportamentul multiline (apel într-o singură metodă)
 c.customize(sep=",", multiline=False)
+
+# Alternativă: setează opțiunile individual folosind metode dedicate
+# (util când vrei să modifici doar o setare)
+c.separator("|")         # setează separatorul CSV la '|'
+c.multiline(True)         # activează afișarea multiline pentru liste
+c.noneplaceholder("N/A") # șir folosit pentru valori lipsă
 
 # Încarcă un șablon YAML și un JSON de intrare (ambele întorc dict sau None la eroare)
 tpl = c.load_template(Path("template.yaml"))
@@ -255,6 +264,7 @@ c.writecsv(Path("output.csv"))
 
 Observații:
 - `Csv4J(verbose: int = 0)` construiește procesorul; folosește `verbose=1` pentru `DEBUG`, `verbose=2` pentru `TRACE` pe stdout.
+ - `Csv4J(verbose: int = 0)` construiește procesorul; folosește `verbose=1` (sau `-v`) pentru `DEBUG` pe stdout.
 - Folosește `c.customize(sep, multiline)` pentru a controla separatorul (`,`, `|`, `;`) și dacă listele sunt emise pe mai multe linii.
 - `load_template` / `loads_template` și `load_input` / `loads_input` acceptă `pathlib.Path` sau dict-uri; când `wildcard=True` calea suportă globbing.
 - Folosește `getcsv()` pentru a obține payload-ul CSV ca string sau `writecsv(Path(...))` pentru a-l scrie pe disc.

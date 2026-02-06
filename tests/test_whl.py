@@ -29,7 +29,7 @@ def files_are_equal(file1: Path, file2: Path) -> bool:
 )
 def test_payload_positive(case_dir):
     """Run payload test using installed package-like import and compare output."""
-    c = Csv4J(1)
+    c = Csv4J()
     assert type(c) is Csv4J
     c.load_input(Path(case_dir / "in.json"))
     c.load_template(Path(case_dir / "template.yaml"))

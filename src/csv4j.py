@@ -16,95 +16,7 @@ from typing import TypedDict, Union
 import time
 import re
 import glob
-
-# Add a custom TRACE level (below DEBUG) for very verbose diagnostics.
-TRACE_LEVEL_NUM = 9
-logging.addLevelName(TRACE_LEVEL_NUM, "TRACE")
-
-
-def _logger_trace(self, message, *args, **kws) -> None:
-    """Log a message at TRACE level.
-
-    Args:
-        self (logging.Logger): Logger instance.
-        message (str): Message to log.
-        *args: Format arguments (tuple).
-        **kws: Additional keyword arguments (dict).
-    """
-    # Instance method for Logger.trace(); respects logger's enabled level
-    if self.isEnabledFor(TRACE_LEVEL_NUM):
-        self._log(TRACE_LEVEL_NUM, message, args, **kws)
-
-
-if not hasattr(logging.Logger, "trace"):
-    # Attach the trace level method to the standard Logger class
-    logging.Logger.trace = _logger_trace  # type: ignore
-
-
-def trace(msg, *args, **kws) -> None:
-    """Log a message at TRACE level (module-level convenience function).
-
-    Args:
-        msg (str): Message to log.
-        *args: Format arguments (tuple).
-        **kws: Additional keyword arguments (dict).
-    """
-    # Convenience module-level function mirroring other logging methods
-    logging.log(TRACE_LEVEL_NUM, msg, *args, **kws)
-
-
-logging.trace = trace  # type: ignore
-
-
-class Logger(logging.Logger):
-    """Custom logger with support for TRACE level and dual output streams.
-
-    Logs to both a file (csv4j.log) and console with configurable verbosity.
-    """
-
-    def __init__(self, name, level=0, verbose=0) -> None:
-        """Initialize the Logger with specified verbosity level.
-
-        Args:
-            name (str): Logger name.
-            level (int): Base logging level (default: 0).
-            verbose (int): Verbosity count where 0=INFO, 1=DEBUG, 2+=TRACE (default: 0).
-        """
-        super().__init__(name, level)
-        # configure logging on this logger instance
-        logger = self
-        logger.setLevel(TRACE_LEVEL_NUM)
-
-        # File handler always records detailed logs to `csv4j.log` so users
-        # can inspect trace/debug information after a run.
-        file_handler = logging.FileHandler("csv4j.log", encoding="utf-8")
-        # file captures TRACE when at least one -v, otherwise DEBUG
-        file_handler.setLevel(TRACE_LEVEL_NUM if verbose >= 1 else logging.DEBUG)
-        # pad levelname to 8 chars so columns align regardless of level
-        file_handler.setFormatter(
-            logging.Formatter("%(asctime)s %(levelname)-8s %(message)s")
-        )
-
-        # Console handler prints concise messages to stdout. Verbosity on
-        # console is controlled by the `-v` count: none => INFO, -v => DEBUG,
-        # -vv+ => TRACE for live debugging.
-        console_handler = logging.StreamHandler(sys.stdout)
-        if verbose >= 2:
-            console_level = TRACE_LEVEL_NUM
-        elif verbose == 1:
-            console_level = logging.DEBUG
-        else:
-            console_level = logging.INFO
-        console_handler.setLevel(console_level)
-        console_handler.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
-
-        # prevent adding duplicate handlers if main called multiple times
-        if not logger.handlers:
-            logger.addHandler(file_handler)
-            logger.addHandler(console_handler)
-
-        # record initialization details at debug level
-        logger.debug("Logger initialized with verbosity %d", verbose)
+import shutil
 
 
 def parse_args(argv=None):
@@ -120,9 +32,10 @@ def parse_args(argv=None):
     parser.add_argument(
         "-i",
         "--input",
-        help="Input CSV file (default: stdin)",
+        help="Input JSON file(s) (one or more). Provide multiple paths separated by space.",
         metavar="INPUT",
         required=True,
+        nargs="+",
         type=Path,
     )
     parser.add_argument(
@@ -136,7 +49,7 @@ def parse_args(argv=None):
     parser.add_argument(
         "-v",
         "--verbose",
-        help="Increase verbosity (-v for debug, -vv for trace on stdout)",
+        help="Increase verbosity (-v for debug)",
         action="count",
         default=0,
         required=False,
@@ -156,6 +69,14 @@ def parse_args(argv=None):
         metavar="SEP",
         choices=[",", "|", ";"],
         default=",",
+        required=False,
+    )
+    parser.add_argument(
+        "-c",
+        "--carry",
+        help="Copy input files to the output parent directory when set",
+        default=False,
+        action="store_true",
         required=False,
     )
     parser.add_argument(
@@ -241,12 +162,33 @@ class Csv4J:
         """Initialize Csv4J processor.
 
         Args:
-            verbose (int): Verbosity level for logging (default: 0).
+            verbose (int): Verbosity level for console output (default: 0).
         """
-        print("csv4j - lightweight CSV from json tool")
-        # initialize module logger with desired verbosity
-        self.logger = Logger("csv4j", verbose=verbose)
-        # normalize provided paths to Path objects
+        # initialize or reuse a native logger.
+        self.logger = logging.getLogger(__file__)
+        if self.logger.handlers:
+            # Reuse root logger configuration; prefer existing handlers
+            self.logger.debug("Using root logger for csv4j output")
+        else:
+            console_handler = logging.StreamHandler(sys.stdout)
+            # Map verbosity to console log level: none => INFO, -v+ => DEBUG
+            if verbose >= 2:
+                console_level = logging.DEBUG
+            elif verbose == 1:
+                console_level = logging.INFO
+            else:
+                console_level = logging.WARNING
+
+            console_handler.setFormatter(
+                logging.Formatter("%(levelname)-8s: %(message)s")
+            )
+            self.logger.addHandler(console_handler)
+            self.logger.setLevel(console_level)
+            self.logger.debug(
+                "Logger 'csv4j' initialized (console only) with verbosity %d", verbose
+            )
+
+        self.logger.info("csv4j - lightweight CSV from json tool")
 
         self.input: list[dict] = []
         self.template: dict = {}
@@ -275,6 +217,57 @@ class Csv4J:
         validate(instance=tpl, schema=schema)
         return True
 
+    def separator(self, sep: str) -> bool:
+        """Set the CSV field separator used when generating output.
+
+        Args:
+            sep (str): One of the supported separator characters: ',', '|', ';'.
+
+        Returns:
+            bool: True on success; False and logs an error when an unsupported
+                separator is provided.
+        """
+        if sep not in [",", "|", ";"]:
+            self.logger.error("sep must be one of ',', '|', or ';'")
+            return False
+        self._customization["sep"] = sep
+        return True
+
+    def multiline(self, multiline: bool) -> bool:
+        """Enable or disable multiline rendering for list-type cells.
+
+        When enabled, lists are emitted as multiple lines (each prefixed with
+        a dash) for visual clarity. When disabled, lists are joined inline.
+
+        Args:
+            multiline (bool): True to enable multiline output, False to disable.
+
+        Returns:
+            bool: True on success; False and logs an error when the provided
+                value is not a boolean.
+        """
+        if multiline not in [True, False]:
+            self.logger.error("multiline must be a boolean value (True/False)")
+            return False
+        self._customization["multiline"] = multiline
+        return True
+
+    def noneplaceholder(self, placeholder: str) -> bool:
+        """Set the string used when a JSON path is not found (the NONE token).
+
+        Args:
+            placeholder (str): The string to emit for missing values (e.g. "N/A").
+
+        Returns:
+            bool: True on success; False and logs an error when the provided
+                placeholder is not a string.
+        """
+        if type(placeholder) is not str:
+            self.logger.error("none value must be a string")
+            return False
+        self._customization["none"] = placeholder
+        return True
+
     def customize(self, sep: str, multiline: bool, none: str = "") -> bool:
         """Customize CSV output settings.
 
@@ -284,21 +277,9 @@ class Csv4J:
             none (str): Value to use when a JSON path is not found. When
                 omitted the current customization value is unchanged.
         """
-        if multiline not in [True, False]:
-            self.logger.error("multiline must be a boolean value (True/False)")
-            return False
-
-        if sep not in [",", "|", ";"]:
-            self.logger.error("sep must be one of ',', '|', or ';'")
-            return False
-
-        if type(none) is not str:
-            self.logger.error("none value must be a string")
-            return False
-
-        self._customization["sep"] = sep
-        self._customization["multiline"] = multiline
-        self._customization["none"] = none
+        self.multiline(multiline)
+        self.noneplaceholder(none)
+        self.separator(sep)
 
         return True
 
@@ -352,12 +333,20 @@ class Csv4J:
         else:
             return None
 
-    def load_input(self, path: Path, wildcard: bool = False) -> Union[dict, None]:
+    def load_input(
+        self, path: Path, wildcard: bool = False, carry: None | Path = None
+    ) -> Union[dict, None]:
         """Load a JSON input file from `path` (supports globbing when `wildcard` True).
 
         Args:
             path (Path): Path (or glob) to the input JSON file.
             wildcard (bool): If True, treat `path` as a glob and allow a single match.
+            carry (Path | None): Optional destination path for copying the input file.
+                When provided, if `carry` is a directory the input will be copied
+                into that directory preserving the input filename. If `carry` is
+                a file path the file will be copied to that exact path (parent
+                directories will be created as needed). Copy failures produce an
+                error log and the method returns `None`.
 
         Returns:
             dict | None: The parsed JSON object on success, otherwise None.
@@ -377,6 +366,22 @@ class Csv4J:
                 )
                 return None
 
+        if carry is not None:
+            try:
+                if carry.exists() and carry.is_dir():
+                    target = carry / path.name
+                    shutil.copy2(path, target)
+                else:
+                    # treat 'carry' as a file destination
+                    if not carry.exists():
+                        carry.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(path, carry)
+            except Exception as e:
+                self.logger.error(
+                    f"failed to copy input from {input} to {carry}! Error: {e}"
+                )
+                return None
+
         if not path.exists() or not path.is_file():
             self.logger.error("input file '%s' does not exist or is not a file", path)
             return None
@@ -388,12 +393,12 @@ class Csv4J:
     def loads_input(self, input: dict, id: str) -> Union[dict, None]:
         in_stream = input
         if type(in_stream) is dict:
-            self.logger.trace(  # type: ignore[attr-defined]
+            self.logger.debug(  # type: ignore[attr-defined]
                 f"input JSON loaded successfully as dictionary with {len(in_stream)} top-level keys"
             )
         elif type(in_stream) is list:
             in_stream = {".": in_stream}
-            self.logger.trace(  # type: ignore[attr-defined]
+            self.logger.debug(  # type: ignore[attr-defined]
                 f"input JSON loaded successfully as list with {len(in_stream)} top-level entries"
             )
         else:
@@ -489,7 +494,6 @@ class Csv4J:
             recursive_results = (
                 self.__recursive_process_path(blob, path) if path else [blob]
             )
-            # print(f"final blob: {blob}")
             # for blob in recursive_results:
             #     if blob is None:
             #         # Missing path — skip this table and warn user
@@ -575,11 +579,11 @@ class Csv4J:
 
         # Recursively process a path within a blob
         payload = []
-        self.logger.trace(
+        self.logger.debug(
             f"resursive at start: {blob}, path: {path}, wildcard: {wildcard}"
         )
         for step in path.split("//"):
-            self.logger.trace(
+            self.logger.debug(
                 f"resursive at step: {blob}, path: {path}, wildcard: {wildcard}"
             )
             path = "//".join(path.split("//")[1:])
@@ -631,7 +635,7 @@ class Csv4J:
                         if type(p[head]) is dict:
                             p[head][k] = v
 
-        self.logger.trace(  # type: ignore[attr-defined]
+        self.logger.debug(  # type: ignore[attr-defined]
             f"recursive_process_path returning payload {payload} entries"
         )
         return payload
@@ -672,10 +676,10 @@ class Csv4J:
                     row_values = [""] * ncols  # type: ignore[operator]
                 matrix.append(row_values)
 
-            self.logger.trace(  # type: ignore[attr-defined]
+            self.logger.debug(  # type: ignore[attr-defined]
                 f"csv_table for table (header len {len(padded_header)}): {padded_header}"
             )
-            self.logger.trace(f"csv_table rows: {matrix}")  # type: ignore[attr-defined]
+            self.logger.debug(f"csv_table rows: {matrix}")  # type: ignore[attr-defined]
             main_matrix.append(matrix)
 
         for index in range(0, max_rows + 1):
@@ -752,7 +756,7 @@ class Csv4J:
                 else:
                     # Single-line output: join with a dash and wrap in quotes
                     payload_row[index] = "*".join(cleaned_items)
-                self.logger.trace(  # type: ignore[attr-defined]
+                self.logger.debug(  # type: ignore[attr-defined]
                     "warning: complex types (list) are not supported in output; converting to string"
                 )
             elif isinstance(payload_row[index], dict):
@@ -763,7 +767,7 @@ class Csv4J:
                     .replace("\r", " ")
                     .replace(sep, " ")
                 )
-                self.logger.trace(  # type: ignore[attr-defined]
+                self.logger.debug(  # type: ignore[attr-defined]
                     "warning: complex types (dict) are not supported in output; converting to string"
                 )
             else:
@@ -796,7 +800,7 @@ class Csv4J:
 
         # Each element in blob is expected to be an entry we can map
         for b in blob:
-            self.logger.trace(f"processing blob entry: {b}")  # type: ignore[attr-defined]
+            self.logger.debug(f"processing blob entry: {b}")  # type: ignore[attr-defined]
             payload_row: list[str] = []
             for entry_key, entry_path in body.items():
                 finished = False
@@ -831,13 +835,13 @@ class Csv4J:
                     continue
 
                 for step in entry_path.split("//"):
-                    self.logger.trace(f"step: {step}, entries: {entries}")  # type: ignore[attr-defined]
+                    self.logger.debug(f"step: {step}, entries: {entries}")  # type: ignore[attr-defined]
                     if step in entries.keys():
                         entries = entries.get(step, {})
                     elif step == "*":
                         # Wildcard step: capture all values at this level as a list
                         entries = list(entries.values())
-                        self.logger.trace(f"wildcard entries: {entries}")  # type: ignore[attr-defined]
+                        self.logger.debug(f"wildcard entries: {entries}")  # type: ignore[attr-defined]
                     elif len([x for x in entries.keys() if re.match(step, x)]) > 0:
                         matched_key = [x for x in entries.keys() if re.match(step, x)][
                             0
@@ -887,15 +891,17 @@ def main(args=None):
     tpl = c4j.load_template(args.template)
     if tpl is None:
         return 1
-    # Load input JSON
-    inp = c4j.load_input(args.input)
-    if inp is None:
-        return 2
+    # Load one or more input JSON files
+    for inpath in args.input:
+        inp = c4j.load_input(
+            inpath, wildcard=False, carry=args.output.parent if args.carry else None
+        )
+        if inp is None:
+            return 2
     # Write output CSV
     dump = c4j.writecsv(args.output)
     if dump is None:
         return 3
-    print("here")
     return 0
 
 

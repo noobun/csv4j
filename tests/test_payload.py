@@ -38,7 +38,7 @@ def files_are_equal(file1: Path, file2: Path) -> bool:
 )
 def test_payload_positive(case_dir):
     """Run payload extraction end-to-end and compare produced CSV to expected."""
-    c = Csv4J(1)
+    c = Csv4J()
     assert type(c) is Csv4J
     c.load_input(Path(case_dir / "in.json"))
     c.load_template(Path(case_dir / "template.yaml"))
@@ -55,7 +55,7 @@ def test_payload_positive(case_dir):
 )
 def test_payload_positive_manualfeed(case_dir):
     """Feed input/template as Python objects, then write and compare output."""
-    c = Csv4J(1)
+    c = Csv4J()
     assert type(c) is Csv4J
 
     with open(case_dir / "in.json", "r", encoding="utf-8") as f:
@@ -79,7 +79,7 @@ def test_payload_positive_manualfeed(case_dir):
 )
 def test_payload_positive_multiline(case_dir):
     """Validate multiline output mode produces expected CSV."""
-    c = Csv4J(1)
+    c = Csv4J()
     assert type(c) is Csv4J
     c.load_input(Path(case_dir / "in.json"))
     c.load_template(Path(case_dir / "template.yaml"))
@@ -98,7 +98,7 @@ def test_payload_positive_multiline(case_dir):
 def test_payload_positive_custom_sep(case_dir):
     """Validate custom separators produce expected CSV outputs."""
     sep = [",", ";", "|"]
-    c = Csv4J(1)
+    c = Csv4J()
     assert type(c) is Csv4J
     c.load_input(Path(case_dir / "in.json"))
     c.load_template(Path(case_dir / "template.yaml"))

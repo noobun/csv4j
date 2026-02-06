@@ -24,7 +24,7 @@ def files_are_equal(file1: Path, file2: Path) -> bool:
 
 def test_payload_wildcard_positive():
     """Test wildcard loading of inputs/templates and compare output."""
-    c = Csv4J(1)
+    c = Csv4J()
     assert type(c) is Csv4J
     c.load_input(Path(REGEX_TC / "*.json"), wildcard=True)
     c.load_template(Path(REGEX_TC / "*.yaml"), wildcard=True)
@@ -36,7 +36,7 @@ def test_payload_wildcard_positive():
 
 def test_payload_wildcard_negative():
     """Ensure wildcard without match returns NoneType (error path)."""
-    c = Csv4J(1)
+    c = Csv4J()
     assert type(c) is Csv4J
     assert type(c.load_input(Path(REGEX_TC / "*.json"))) is NoneType
     assert type(c.load_template(Path(REGEX_TC / "*.yaml"))) is NoneType
@@ -44,7 +44,7 @@ def test_payload_wildcard_negative():
 
 def test_payload_multiinput_positive():
     """Load multiple inputs and ensure merged output matches expected."""
-    c = Csv4J(1)
+    c = Csv4J()
     assert type(c) is Csv4J
     c.load_input(Path(MULTIINPUT_TC / "in1.json"))
     c.load_input(Path(MULTIINPUT_TC / "in2.json"))
@@ -58,7 +58,7 @@ def test_payload_multiinput_positive():
 
 def test_payload_nullkey_positive():
     """Load multiple inputs and ensure merged output matches expected."""
-    c = Csv4J(1)
+    c = Csv4J()
     assert type(c) is Csv4J
     c.load_input(Path(NULLKEY_TC / "in.json"))
     c.load_template(Path(NULLKEY_TC / "template.yaml"))
@@ -69,3 +69,17 @@ def test_payload_nullkey_positive():
 
         assert os.path.exists(f"dump/nullvalue_{null_val}.csv") is True
         assert files_are_equal(Path(f"dump/nullvalue_{null_val}.csv"), Path(NULLKEY_TC / f"out_{null_val}.csv"))
+
+
+def test_payload_carry_api():
+    """API mode: verify that providing `carry` copies the input file to the target location."""
+    c = Csv4J()
+    assert type(c) is Csv4J
+    src = MULTIINPUT_TC / "in1.json"
+    target = Path("dump") / src.name
+
+    # call load_input with carry pointing at the dump directory
+    res = c.load_input(src, wildcard=False, carry=Path("dump"))
+    assert res is not None
+    assert target.exists()
+    assert files_are_equal(target, src)

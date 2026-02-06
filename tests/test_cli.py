@@ -132,3 +132,32 @@ def test_cli_verbose_flag(case_dir):
 
     assert out_path.exists()
     assert files_are_equal(out_path, case_dir / "out.csv")
+
+
+@pytest.mark.parametrize(
+    "case_dir",
+    load_test_cases(),
+    ids=lambda p: p.name,
+)
+def test_cli_carry_flag(case_dir):
+    """Ensure `-c/--carry` copies the input JSON into the output directory."""
+    out_path = Path("dump") / f"{case_dir.name}_carry.csv"
+    carry_target = Path("dump") / (case_dir / "in.json").name
+
+    cmd = [
+        sys.executable,
+        "src/csv4j.py",
+        "-i",
+        str(case_dir / "in.json"),
+        "-t",
+        str(case_dir / "template.yaml"),
+        "-o",
+        str(out_path),
+        "-c",
+    ]
+    subprocess.run(cmd, check=True)
+
+    assert out_path.exists()
+    # carry should copy the input file into the output parent dir (dump/)
+    assert carry_target.exists()
+    assert files_are_equal(carry_target, case_dir / "in.json")

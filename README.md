@@ -27,30 +27,33 @@ python3 src/csv4j.py -i <input.json> -t <template.yaml> -o <output.csv>
 ```
 
 - Arguments:
-  - `-i, --input`: Input JSON file (required)
+  - `-i, --input`: Input JSON file(s); supply one or more paths separated by spaces (required)
   - `-o, --output`: Output CSV file (required)
+  - `-c, --carry`: Copy input file(s) into the output's parent directory when set (optional)
   - `-t, --template`: Template YAML file (required)
   - `-n, --none`: String to use when a JSON path is not found (optional; default: empty string)
   - `-s, --sep`: CSV separator character (optional; one of `,`, `|`, `;`; default: `,`)
   - `-ml, --multiline`: Emit list-type cells as multiple lines when present; otherwise lists are joined inline (optional; default: off)
 
 - Verbosity:
-  - no `-v`: stdout shows INFO and higher; logfile (`csv4j.log`) captures DEBUG.
-  - `-v`: stdout shows DEBUG and higher; logfile captures TRACE and above.
-  - `-vv`: stdout shows TRACE and logfile captures TRACE.
+ - Verbosity (console only):
+  - no `-v`: stdout shows INFO and higher.
+  - `-v`: stdout shows DEBUG and higher.
+  - `-v` or more: stdout shows DEBUG and higher.
 
 Examples:
 
 ```
 python3 src/csv4j.py -i tests/products.json -t tests/template.yaml -o products.csv
-python3 src/csv4j.py -i tests/products.json -t tests/template.yaml -o products.csv -v
+python3 src/csv4j.py -i tests/a.json tests/b.json -t tests/template.yaml -o products.csv -v
+python3 src/csv4j.py -i tests/products.json -t tests/template.yaml -o products.csv -c
 ```
 
 ## Implementation (high level)
 - The CLI is implemented in `src/csv4j.py`.
 - A YAML template specifies the tables to extract: each table has a `path` into the JSON and a `body` mapping of column keys to JSON paths.
 - The tool builds a `table_payload` with `header` and `rows` for each table, normalizes headers and rows to deterministic ordering, and can emit a CSV-shaped matrix for each table.
-- Logging: messages go to `csv4j.log`; console output is controlled by verbosity flags. A custom TRACE level is implemented for very verbose traces.
+- Console output is controlled by verbosity flags; no logfile is written by the tool.
 
 ## Table Merge Behavior
 
@@ -234,8 +237,14 @@ from csv4j import Csv4J
 # Create a processor (verbose is optional)
 c = Csv4J(verbose=1)
 
-# Optional: set CSV separator and multiline behavior
+# Optional: set CSV separator and multiline behavior (single-call)
 c.customize(sep=",", multiline=False)
+
+# Alternative: set options individually using dedicated methods
+# (useful if you want to change only one setting at a time)
+c.separator("|")         # set the CSV separator to '|'
+c.multiline(True)         # enable multiline list rendering
+c.noneplaceholder("N/A") # set replacement for missing values
 
 # Load a YAML template and a JSON input (both return dict or None on error)
 tpl = c.load_template(Path("template.yaml"))
@@ -255,6 +264,7 @@ c.writecsv(Path("output.csv"))
 
 Notes:
 - `Csv4J(verbose: int = 0)` constructs the processor; pass `verbose=1` for `DEBUG`, `verbose=2` for `TRACE` on stdout.
+- `Csv4J(verbose: int = 0)` constructs the processor; pass `verbose=1` (or `-v`) for `DEBUG` on stdout.
 - Use `c.customize(sep, multiline)` to control separator (`,`, `|`, `;`) and whether lists are emitted as multiple lines.
 - `load_template` / `loads_template` and `load_input` / `loads_input` accept `pathlib.Path` or dicts; when `wildcard=True` the path supports globbing.
 - Use `getcsv()` to obtain the CSV payload as a string, or `writecsv(Path(...))` to write it to disk.

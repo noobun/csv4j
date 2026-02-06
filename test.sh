@@ -20,7 +20,6 @@ if [ "$INCLUDE_DUNDERS" = true ]; then
 fi
 
 rm dump/*
-rm csv4j.log
 
 #source venv/bin/activate
 echo -e "\nStart black..."
