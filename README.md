@@ -1,6 +1,7 @@
 # csv4j
-[![ro](https://img.shields.io/badge/lang-ro-red.svg)](README.ro.md)
 
+[![](https://img.shields.io/pypi/v/csv4j?pypiBaseUrl=https%3A%2F%2Ftest.pypi.org&style=flat-square&logo=python&label=PyPi%20(Test)%20Version&link=https%3A%2F%2Ftest.pypi.org%2Fproject%2Fcsv4j%2F
+)](https://test.pypi.org/project/csv4j/)
 
 Lightweight CLI utility to extract tables from JSON and emit CSV representations.
 

@@ -6,7 +6,7 @@ from types import NoneType
 import pytest
 
 sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src", "csv4j"))
 )
 
 from csv4j import Csv4J  # noqa: E402
