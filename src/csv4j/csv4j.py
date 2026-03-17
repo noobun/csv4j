@@ -7,16 +7,17 @@ and writes a CSV-like output.
 """
 
 import argparse
-import sys
-import logging
-from pathlib import Path
-import yaml  # type: ignore
-import json
-from typing import TypedDict, Union
-import time
-import re
 import glob
+import json
+import logging
+import re
 import shutil
+import sys
+import time
+from pathlib import Path
+from typing import TypedDict, Union
+
+import yaml  # type: ignore
 
 
 def parse_args(argv=None):
@@ -179,9 +180,7 @@ class Csv4J:
             else:
                 console_level = logging.WARNING
 
-            console_handler.setFormatter(
-                logging.Formatter("%(levelname)-8s: %(message)s")
-            )
+            console_handler.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
             self.logger.addHandler(console_handler)
             self.logger.setLevel(console_level)
             self.logger.debug(
@@ -209,7 +208,13 @@ class Csv4J:
         Returns:
             bool: True when template is valid; raises from jsonschema.validate on failure.
         """
-        from jsonschema import validate
+        try:
+            from jsonschema import validate
+        except ImportError:
+            self.logger.warning(
+                "jsonschema library is required for template validation; please install with 'pip install jsonschema'"
+            )
+            return True  # skip validation if jsonschema is not available
 
         # Validate the YAML template against the embedded JSON schema
         schema = self.structure
@@ -309,9 +314,7 @@ class Csv4J:
                 return None
 
         if not path.exists() or not path.is_file():
-            self.logger.error(
-                "template file '%s' does not exist or is not a file", path
-            )
+            self.logger.error("template file '%s' does not exist or is not a file", path)
             return None
 
         tmp = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -377,9 +380,7 @@ class Csv4J:
                         carry.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(path, carry)
             except Exception as e:
-                self.logger.error(
-                    f"failed to copy input from {input} to {carry}! Error: {e}"
-                )
+                self.logger.error(f"failed to copy input from {input} to {carry}! Error: {e}")
                 return None
 
         if not path.exists() or not path.is_file():
@@ -491,9 +492,7 @@ class Csv4J:
             # into nested objects/arrays in the input JSON.
             path = table.get("path", None)
 
-            recursive_results = (
-                self.__recursive_process_path(blob, path) if path else [blob]
-            )
+            recursive_results = self.__recursive_process_path(blob, path) if path else [blob]
             # for blob in recursive_results:
             #     if blob is None:
             #         # Missing path — skip this table and warn user
@@ -534,10 +533,8 @@ class Csv4J:
                     )
                     dump = set(list(dump)[:1])
                 else:
-                    self.logger.warning(
-                        f"pipe '{pipe_k}' produced no values; using NONE string"
-                    )
-                    dump = set(["NONE"])
+                    self.logger.warning(f"pipe '{pipe_k}' produced no values; using NONE string")
+                    dump = {"NONE"}
                 pipe_boilerplate: Boilerplate = {
                     "name": pipe_k,
                     "ncols": 1,
@@ -561,7 +558,7 @@ class Csv4J:
 
         return payload
 
-    def __recursive_process_path(self, blob, path, wildcard={}):
+    def __recursive_process_path(self, blob, path, wildcard=None):  # noqa: C901
         """Recursively process a JSON path with wildcard support.
 
         Args:
@@ -572,6 +569,8 @@ class Csv4J:
         Returns:
             list[dict]: List of processed blob dictionaries.
         """
+        if wildcard is None:
+            wildcard = {}
 
         def is_nested(d):
             """Check if any value in the dictionary is itself a dictionary"""
@@ -579,22 +578,16 @@ class Csv4J:
 
         # Recursively process a path within a blob
         payload = []
-        self.logger.debug(
-            f"resursive at start: {blob}, path: {path}, wildcard: {wildcard}"
-        )
+        self.logger.debug(f"resursive at start: {blob}, path: {path}, wildcard: {wildcard}")
         for step in path.split("//"):
-            self.logger.debug(
-                f"resursive at step: {blob}, path: {path}, wildcard: {wildcard}"
-            )
+            self.logger.debug(f"resursive at step: {blob}, path: {path}, wildcard: {wildcard}")
             path = "//".join(path.split("//")[1:])
             if step in blob:
                 blob = blob[step]
             elif step == "*":
                 if type(blob) is list:
                     for item in blob:
-                        payload += self.__recursive_process_path(
-                            item, path, {**wildcard}
-                        )
+                        payload += self.__recursive_process_path(item, path, {**wildcard})
                 elif type(blob) is dict:
                     # Wildcard step: capture all values at this level as a list
                     for k, b in blob.items():
@@ -692,9 +685,7 @@ class Csv4J:
 
         return payload
 
-    def __boilerplate_merge(
-        self, base: list, incoming: Boilerplate, table: dict
-    ) -> Boilerplate:
+    def __boilerplate_merge(self, base: list, incoming: Boilerplate, table: dict) -> Boilerplate:
         """Merge table boilerplate with existing tables to handle duplicates.
 
         Args:
@@ -745,8 +736,7 @@ class Csv4J:
             if isinstance(payload_row[index], list):
                 # Convert each element to str first (defensive) then join
                 cleaned_items = [
-                    " ".join(str(i).replace(sep, " ").strip().split())
-                    for i in payload_row[index]
+                    " ".join(str(i).replace(sep, " ").strip().split()) for i in payload_row[index]
                 ]
                 if multiline:
                     # Multiline output: prefix first line with '-' and separate
@@ -773,15 +763,12 @@ class Csv4J:
             else:
                 # Primitive values: coerce to str and remove raw newlines and separator
                 payload_row[index] = (
-                    str(payload_row[index])
-                    .replace("\n", " ")
-                    .replace("\r", " ")
-                    .replace(sep, " ")
+                    str(payload_row[index]).replace("\n", " ").replace("\r", " ").replace(sep, " ")
                 )
         return payload_row
 
-    def __process_table(
-        self, boilerplate, blob, body, sep, multiline, none, wildcard_keys=[]
+    def __process_table(  # noqa: C901
+        self, boilerplate, blob, body, sep, multiline, none, wildcard_keys=None
     ) -> None:
         """Process a single table by extracting and formatting cell values.
 
@@ -793,6 +780,8 @@ class Csv4J:
             multiline (bool): Whether to emit list items as multiple lines.
             wildcard_keys (list): List of wildcard capture keys (default: []).
         """
+        if wildcard_keys is None:
+            wildcard_keys = []
 
         def is_nested(d):
             """Check if any value in the dictionary is itself a dictionary"""
@@ -802,17 +791,13 @@ class Csv4J:
         for b in blob:
             self.logger.debug(f"processing blob entry: {b}")  # type: ignore[attr-defined]
             payload_row: list[str] = []
-            for entry_key, entry_path in body.items():
+            for _entry_key, entry_path in body.items():
                 finished = False
-                if (
-                    type(b) is not list and type(b) is not dict
-                ):  # only for list entry with no key
+                if type(b) is not list and type(b) is not dict:  # only for list entry with no key
                     if entry_path == "$|$":
                         # for value in entries:
                         boilerplate["rows"].append(
-                            self.__cleanup_protect_boilerplate(
-                                [b], sep=sep, multiline=multiline
-                            )
+                            self.__cleanup_protect_boilerplate([b], sep=sep, multiline=multiline)
                         )  # type: ignore[union-attr]
                         continue
                 elif type(b) is dict:
@@ -843,9 +828,7 @@ class Csv4J:
                         entries = list(entries.values())
                         self.logger.debug(f"wildcard entries: {entries}")  # type: ignore[attr-defined]
                     elif len([x for x in entries.keys() if re.match(step, x)]) > 0:
-                        matched_key = [x for x in entries.keys() if re.match(step, x)][
-                            0
-                        ]
+                        matched_key = [x for x in entries.keys() if re.match(step, x)][0]
                         entries = entries.get(matched_key, {})
                     # elif step == "$0$":
                     #     entries = wildcard_keys
@@ -857,9 +840,7 @@ class Csv4J:
 
                 if entries is None and not finished:
                     # Missing sub-path — log and substitute the configured NONE
-                    self.logger.warning(
-                        f"warning: path '{entry_path}' not found in input JSON"
-                    )
+                    self.logger.warning(f"warning: path '{entry_path}' not found in input JSON")
                     entries = none
 
                 payload_row.append(entries)

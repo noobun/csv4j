@@ -1,0 +1,6 @@
+# Development and code quality tools
+black>=24.1.0
+ruff>=0.3.0
+flake8>=6.1.0
+bandit>=1.8.0
+mypy>=1.7.0

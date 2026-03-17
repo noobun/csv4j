@@ -36,7 +36,7 @@ def test_cli_basic(case_dir):
     except Exception:
         pass
 
-    cmd = [sys.executable, "src/csv4j.py", "-i", str(case_dir / "in.json"), "-t", str(case_dir / "template.yaml"), "-o", str(out_path)]
+    cmd = [sys.executable, "src/csv4j/csv4j.py", "-i", str(case_dir / "in.json"), "-t", str(case_dir / "template.yaml"), "-o", str(out_path)]
     subprocess.run(cmd, check=True)
 
     assert out_path.exists()
@@ -57,7 +57,7 @@ def test_cli_multiline(case_dir):
 
     cmd = [
         sys.executable,
-        "src/csv4j.py",
+        "src/csv4j/csv4j.py",
         "-i",
         str(case_dir / "in.json"),
         "-t",
@@ -88,7 +88,7 @@ def test_cli_custom_sep(case_dir):
 
         cmd = [
             sys.executable,
-            "src/csv4j.py",
+            "src/csv4j/csv4j.py",
             "-i",
             str(case_dir / "in.json"),
             "-t",
@@ -119,7 +119,7 @@ def test_cli_verbose_flag(case_dir):
 
     cmd = [
         sys.executable,
-        "src/csv4j.py",
+        "src/csv4j/csv4j.py",
         "-i",
         str(case_dir / "in.json"),
         "-t",
@@ -146,7 +146,7 @@ def test_cli_carry_flag(case_dir):
 
     cmd = [
         sys.executable,
-        "src/csv4j.py",
+        "src/csv4j/csv4j.py",
         "-i",
         str(case_dir / "in.json"),
         "-t",
