@@ -3,8 +3,9 @@ import os
 from pathlib import Path
 import pytest
 from csv4j import Csv4J  # noqa: E402
+import subprocess
+import sys
 
-# tests/test_module_a.py
 TEST_CASES_DIR = Path(__file__).parent / "payloads"
 
 
@@ -22,18 +23,36 @@ def files_are_equal(file1: Path, file2: Path) -> bool:
     return file1.read_bytes() == file2.read_bytes()
 
 
-@pytest.mark.parametrize(
-    "case_dir",
-    load_test_cases(),
-    ids=lambda p: p.name,  # test names: test1, test2, ...
-)
-def test_payload_positive(case_dir):
-    """Run payload test using installed package-like import and compare output."""
-    c = Csv4J()
-    assert type(c) is Csv4J
-    c.load_input(Path(case_dir / "in.json"))
-    c.load_template(Path(case_dir / "template.yaml"))
-    c.writecsv(Path(f"dump/{case_dir.name}.csv"))
+class TestWHLImport:
+    @pytest.mark.parametrize(
+        "case_dir",
+        load_test_cases(),
+        ids=lambda p: p.name,  # test names: test1, test2, ...
+    )
+    def test_payload_positive(self, case_dir):
+        """Run payload test using installed package-like import and compare output."""
+        c = Csv4J()
+        assert type(c) is Csv4J
+        c.load_input(Path(case_dir / "in.json"))
+        c.load_template(Path(case_dir / "template.yaml"))
+        c.writecsv(Path(f"dump/{case_dir.name}.csv"))
 
-    assert os.path.exists(f"dump/{case_dir.name}.csv") is True
-    assert files_are_equal(Path(f"dump/{case_dir.name}.csv"), case_dir / "out.csv")
+        assert os.path.exists(f"dump/{case_dir.name}.csv") is True
+        assert files_are_equal(Path(f"dump/{case_dir.name}.csv"), case_dir / "out.csv")
+
+
+class TestWHLCall:
+    @pytest.mark.parametrize(
+        "case_dir",
+        load_test_cases(),
+        ids=lambda p: p.name,  # test names: test1, test2, ...
+    )
+    def test_payload_positive(self, case_dir):
+        """Run payload test using installed package-like import and compare output."""
+        _ = subprocess.run(
+            [sys.executable, "-m", "csv4j", "-i", str(case_dir / "in.json"), "-t", str(case_dir / "template.yaml"),
+             "-o", str(Path("dump") / f"{case_dir.name}.csv")],
+            check=True,
+        )
+        assert os.path.exists(f"dump/{case_dir.name}.csv") is True
+        assert files_are_equal(Path(f"dump/{case_dir.name}.csv"), case_dir / "out.csv")

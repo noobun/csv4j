@@ -3,6 +3,7 @@
 [![](https://img.shields.io/pypi/v/csv4j?pypiBaseUrl=https%3A%2F%2Ftest.pypi.org&style=flat-square&logo=python&label=PyPi%20(Test)%20Version&link=https%3A%2F%2Ftest.pypi.org%2Fproject%2Fcsv4j%2F
 )](https://test.pypi.org/project/csv4j/)
 
+
 Lightweight CLI utility to extract tables from JSON and emit CSV representations.
 
 ## Purpose
@@ -23,8 +24,14 @@ Lightweight CLI utility to extract tables from JSON and emit CSV representations
 ## Usage
 - Run the tool from the repository root:
 
-```
+```shell
 python3 src/csv4j.py -i <input.json> -t <template.yaml> -o <output.csv>
+```
+
+- Or invoke it as a module (requires the package to be installed or the repo root on `PYTHONPATH`):
+
+```shell
+python -m csv4j -i <input.json> -t <template.yaml> -o <output.csv>
 ```
 
 - Arguments:
@@ -36,18 +43,25 @@ python3 src/csv4j.py -i <input.json> -t <template.yaml> -o <output.csv>
   - `-s, --sep`: CSV separator character (optional; one of `,`, `|`, `;`; default: `,`)
   - `-ml, --multiline`: Emit list-type cells as multiple lines when present; otherwise lists are joined inline (optional; default: off)
 
-- Verbosity:
- - Verbosity (console only):
+- Verbosity (console only):
   - no `-v`: stdout shows INFO and higher.
   - `-v`: stdout shows DEBUG and higher.
   - `-v` or more: stdout shows DEBUG and higher.
 
 Examples:
 
-```
+```shell
 python3 src/csv4j.py -i tests/products.json -t tests/template.yaml -o products.csv
 python3 src/csv4j.py -i tests/a.json tests/b.json -t tests/template.yaml -o products.csv -v
 python3 src/csv4j.py -i tests/products.json -t tests/template.yaml -o products.csv -c
+```
+
+- Using the module form (after `pip install -e .` or `pip install csv4j`):
+
+```shell
+python -m csv4j -i tests/products.json -t tests/template.yaml -o products.csv
+python -m csv4j -i tests/a.json tests/b.json -t tests/template.yaml -o products.csv -v
+python -m csv4j -i tests/products.json -t tests/template.yaml -o products.csv -c
 ```
 
 ## Implementation (high level)
@@ -64,7 +78,7 @@ When multiple template entries target the same table name (id) and produce the s
 
 YAML snippets (two template entries that target the same table):##
 
-```
+```yaml
 tables:
   - path: items.partA
     name: "inventory"
@@ -141,7 +155,7 @@ input.json
 ```
 
 Command:
-```
+```shell
 python3 src/csv4j.py -i input.json -t template.yaml -o out.csv
 ```
 
@@ -219,13 +233,13 @@ You can install `csv4j` from a built wheel and use it as a regular Python packag
 
 - Install from a wheel file (local path):
 
-```
+```shell
 pip install /path/to/csv4j-<version>-py3-none-any.whl
 ```
 
 - Install from the repository (editable install for development):
 
-```
+```shell
 pip install -e .
 ```
 

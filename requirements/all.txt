@@ -2,6 +2,3 @@
 -r base.txt
 -r test.txt
 -r dev.txt
-tox>=4.0.0
-build>=1.0.0
-twine>=4.0.0
