@@ -191,7 +191,7 @@ class Csv4J:
 
         self.input: list[dict] = []
         self.template: dict = {}
-        self._customization: dict = {
+        self.__customization: dict = {
             "sep": ",",
             "multiline": False,
             "none": "",
@@ -235,7 +235,7 @@ class Csv4J:
         if sep not in [",", "|", ";"]:
             self.logger.error("sep must be one of ',', '|', or ';'")
             return False
-        self._customization["sep"] = sep
+        self.__customization["sep"] = sep
         return True
 
     def multiline(self, multiline: bool) -> bool:
@@ -254,7 +254,7 @@ class Csv4J:
         if multiline not in [True, False]:
             self.logger.error("multiline must be a boolean value (True/False)")
             return False
-        self._customization["multiline"] = multiline
+        self.__customization["multiline"] = multiline
         return True
 
     def noneplaceholder(self, placeholder: str) -> bool:
@@ -270,7 +270,7 @@ class Csv4J:
         if type(placeholder) is not str:
             self.logger.error("none value must be a string")
             return False
-        self._customization["none"] = placeholder
+        self.__customization["none"] = placeholder
         return True
 
     def customize(self, sep: str, multiline: bool, none: str = "") -> bool:
@@ -448,9 +448,9 @@ class Csv4J:
             str: The CSV payload.
         """
         return self.__process(
-            sep=self._customization["sep"],
-            multiline=self._customization["multiline"],
-            none=self._customization["none"],
+            sep=self.__customization["sep"],
+            multiline=self.__customization["multiline"],
+            none=self.__customization["none"],
         )
 
     def __process(self, sep: str = ",", multiline: bool = False, none: str = "") -> str:
@@ -846,7 +846,9 @@ class Csv4J:
                 payload_row.append(entries)
 
             if len(payload_row) > 0:
-                boilerplate["rows"].append(self.__cleanup_protect_boilerplate(payload_row, sep=sep, multiline=multiline))  # type: ignore[union-attr]
+                boilerplate["rows"].append(
+                    self.__cleanup_protect_boilerplate(payload_row, sep=sep, multiline=multiline)
+                )  # type: ignore[union-attr]
 
             # Record table dimensions
             boilerplate["ncols"] = len(boilerplate["header"])  # type: ignore[arg-type]

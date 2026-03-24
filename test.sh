@@ -45,7 +45,7 @@ mypy src/csv4j/**.py
 
 echo -e "\nStart pytest..."
 echo "######################"
-pytest ./tests/test_main.py ./tests/test_payload.py ./tests/test_specials.py ./tests/test_cli.py -v #--tb=no
+pytest --rootdir=. --ignore=tests/test_cli.py -v ./tests #--tb=no
 
 if [ "$RELEASE_MODE" = true ]; then
     # Release mode: build, create venv, install wheel, and test
